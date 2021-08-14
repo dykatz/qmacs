@@ -14,6 +14,8 @@ cmake_policy(SET CMP0100 NEW)
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(qmacs
+	buffer.cc
+	frame.cc
 	main.cc
 	window.cc
 )

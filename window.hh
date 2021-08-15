@@ -21,6 +21,8 @@ private slots:
     void remove_other_frames();
 
 private:
+    Frame* create_frame();
+
     Buffer* m_active_buffer;
     Frame* m_active_frame;
     QList<Buffer*> m_buffers;

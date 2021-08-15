@@ -30,15 +30,13 @@ Window::Window()
     connect(remove_this_frame_action, &QAction::triggered, this, &Window::remove_this_frame);
     frame_menu->addAction(remove_this_frame_action);
 
-    auto firstBuffer = new Buffer(this);
-    m_buffers.append(firstBuffer);
-    m_active_buffer = firstBuffer;
+    auto first_buffer = new Buffer(this);
+    m_buffers.append(first_buffer);
+    m_active_buffer = first_buffer;
 
-    auto firstFrame = new Frame;
-    firstFrame->setDocument(firstBuffer);
-    m_active_frame = firstFrame;
-
-    setCentralWidget(firstFrame);
+    auto first_frame = create_frame();
+    m_active_frame = first_frame;
+    setCentralWidget(first_frame);
 }
 
 void Window::horizontal_split_frame()
@@ -57,9 +55,7 @@ void Window::horizontal_split_frame()
         splitter = new_splitter;
     }
 
-    auto new_frame = new Frame;
-    new_frame->setDocument(m_active_buffer);
-    splitter->addWidget(new_frame);
+    splitter->addWidget(create_frame());
 }
 
 void Window::vertical_split_frame()
@@ -80,9 +76,7 @@ void Window::vertical_split_frame()
         splitter = new_splitter;
     }
 
-    auto new_frame = new Frame;
-    new_frame->setDocument(m_active_buffer);
-    splitter->addWidget(new_frame);
+    splitter->addWidget(create_frame());
 }
 
 void Window::remove_other_frames()
@@ -119,4 +113,11 @@ void Window::remove_this_frame()
         }
         delete splitter;
     }
+}
+
+Frame* Window::create_frame()
+{
+    auto new_frame = new Frame;
+    new_frame->setDocument(m_active_buffer);
+    return new_frame;
 }

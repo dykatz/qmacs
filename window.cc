@@ -119,5 +119,6 @@ Frame* Window::create_frame()
 {
     auto new_frame = new Frame;
     new_frame->setDocument(m_active_buffer);
+    connect(new_frame, &Frame::gained_focus, this, [=]{ m_active_frame = new_frame; });
     return new_frame;
 }

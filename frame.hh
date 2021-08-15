@@ -9,4 +9,10 @@ class Frame : public QTextEdit
 public:
     Frame();
     virtual ~Frame() = default;
+
+signals:
+    void gained_focus();
+
+protected:
+    void focusInEvent(QFocusEvent*) override;
 };

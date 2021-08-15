@@ -56,6 +56,7 @@ void Window::horizontal_split_frame()
     }
 
     splitter->addWidget(create_frame());
+    m_active_frame->setFocus();
 }
 
 void Window::vertical_split_frame()
@@ -77,6 +78,7 @@ void Window::vertical_split_frame()
     }
 
     splitter->addWidget(create_frame());
+    m_active_frame->setFocus();
 }
 
 void Window::remove_other_frames()
@@ -86,6 +88,7 @@ void Window::remove_other_frames()
         return;
     setCentralWidget(m_active_frame);
     delete central_widget;
+    m_active_frame->setFocus();
 }
 
 void Window::remove_this_frame()
@@ -113,6 +116,8 @@ void Window::remove_this_frame()
         }
         delete splitter;
     }
+
+    m_active_frame->setFocus();
 }
 
 Frame* Window::create_frame()

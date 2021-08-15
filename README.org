@@ -1,0 +1,13 @@
+* Qmacs
+
+A text editing application created to learn from the past three decades of text editing innovations.
+
+* Philosophy
+
+- Qmacs should provide sane defaults, not require the user to become a configuration expert.
+- Qmacs should include as much as possible in the base system, not rely on plugins or extensions to become useful.
+- Qmacs should focus on integrating components with each other, not pretend that they exist in a vacuum.
+
+* Copyright
+
+Qmacs is licensed under the GPLv3 license, which can be found in the =LICENSE= file.

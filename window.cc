@@ -96,10 +96,12 @@ void Window::remove_this_frame()
     auto splitter = qobject_cast<QSplitter*>(m_active_frame->parent());
     if (!splitter)
         return;
-    auto active_frame_index = splitter->indexOf(m_active_frame);
+
+    auto frames = findChildren<Frame*>();
+    auto active_frame_index = frames.indexOf(m_active_frame);
     delete m_active_frame;
 
-    auto frames = splitter->findChildren<Frame*>();
+    frames = findChildren<Frame*>();
     if (active_frame_index >= frames.count())
         m_active_frame = frames[frames.count() - 1];
     else

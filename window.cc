@@ -30,6 +30,16 @@ Window::Window()
     connect(remove_this_frame_action, &QAction::triggered, this, &Window::remove_this_frame);
     frame_menu->addAction(remove_this_frame_action);
 
+    auto move_to_next_frame_action = new QAction("Move to &Next Frame", this);
+    move_to_next_frame_action->setShortcut(Qt::CTRL | Qt::Key_Tab);
+    connect(move_to_next_frame_action, &QAction::triggered, this, &Window::move_to_next_frame);
+    frame_menu->addAction(move_to_next_frame_action);
+
+    auto move_to_previous_frame_action = new QAction("Move to &Previous Frame", this);
+    move_to_previous_frame_action->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab);
+    connect(move_to_previous_frame_action, &QAction::triggered, this, &Window::move_to_previous_frame);
+    frame_menu->addAction(move_to_previous_frame_action);
+
     auto first_buffer = new Buffer(this);
     m_buffers.append(first_buffer);
     m_active_buffer = first_buffer;
@@ -122,10 +132,40 @@ void Window::remove_this_frame()
     m_active_frame->setFocus();
 }
 
+void Window::move_to_next_frame()
+{
+    auto frames = findChildren<Frame*>();
+    auto new_frame_index = frames.indexOf(m_active_frame) - 1;
+
+    if (new_frame_index < 0)
+        new_frame_index = frames.count() - 1;
+
+    set_active_frame(frames[new_frame_index]);
+    m_active_frame->setFocus();
+}
+
+void Window::move_to_previous_frame()
+{
+    auto frames = findChildren<Frame*>();
+    auto new_frame_index = frames.indexOf(m_active_frame) + 1;
+
+    if (new_frame_index >= frames.count())
+        new_frame_index = 0;
+
+    set_active_frame(frames[new_frame_index]);
+    m_active_frame->setFocus();
+}
+
 Frame* Window::create_frame()
 {
     auto new_frame = new Frame;
     new_frame->setDocument(m_active_buffer);
-    connect(new_frame, &Frame::gained_focus, this, [=]{ m_active_frame = new_frame; });
+    connect(new_frame, &Frame::gained_focus, this, [=]{ set_active_frame(new_frame); });
     return new_frame;
+}
+
+void Window::set_active_frame(Frame* frame)
+{
+    m_active_frame = frame;
+    m_active_buffer = qobject_cast<Buffer*>(frame->document());
 }

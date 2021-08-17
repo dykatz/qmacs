@@ -8,6 +8,13 @@
 Window::Window()
     : QMainWindow(nullptr)
 {
+    auto file_menu = menuBar()->addMenu("&File");
+
+    auto new_buffer_action = new QAction("&New Buffer", this);
+    new_buffer_action->setShortcut(QKeySequence::New);
+    connect(new_buffer_action, &QAction::triggered, this, &Window::new_buffer);
+    file_menu->addAction(new_buffer_action);
+
     auto frame_menu = menuBar()->addMenu("F&rame");
 
     auto horizontal_split_frame_action = new QAction("Split &Horizontally", this);
@@ -40,9 +47,7 @@ Window::Window()
     connect(move_to_previous_frame_action, &QAction::triggered, this, &Window::move_to_previous_frame);
     frame_menu->addAction(move_to_previous_frame_action);
 
-    auto first_buffer = new Buffer(this);
-    m_buffers.append(first_buffer);
-    m_active_buffer = first_buffer;
+    m_active_buffer = create_buffer();
 
     auto first_frame = create_frame();
     m_active_frame = first_frame;
@@ -156,6 +161,18 @@ void Window::move_to_previous_frame()
     m_active_frame->setFocus();
 }
 
+void Window::new_buffer()
+{
+    set_active_buffer(create_buffer());
+}
+
+Buffer* Window::create_buffer()
+{
+    auto new_buffer = new Buffer(this);
+    m_buffers.append(new_buffer);
+    return new_buffer;
+}
+
 Frame* Window::create_frame()
 {
     auto new_frame = new Frame;
@@ -168,4 +185,10 @@ void Window::set_active_frame(Frame* frame)
 {
     m_active_frame = frame;
     m_active_buffer = qobject_cast<Buffer*>(frame->document());
+}
+
+void Window::set_active_buffer(Buffer* buffer)
+{
+    m_active_buffer = buffer;
+    m_active_frame->setDocument(buffer);
 }

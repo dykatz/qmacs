@@ -8,6 +8,6 @@ class Buffer : public QTextDocument
     Q_OBJECT
 
 public:
-    Buffer(QWidget*);
+    Buffer(QString const&, QWidget*);
     virtual ~Buffer() = default;
 };

@@ -52,6 +52,8 @@ Window::Window()
     auto first_frame = create_frame();
     m_active_frame = first_frame;
     setCentralWidget(first_frame);
+
+    update_window_title();
 }
 
 void Window::horizontal_split_frame()
@@ -166,9 +168,34 @@ void Window::new_buffer()
     set_active_buffer(create_buffer());
 }
 
+QString Window::create_untitled_name() const
+{
+    int untitled_number = 1;
+    while (true) {
+        QString untitled_name = QStringLiteral("*untitled-%1*").arg(untitled_number);
+
+        bool used = false;
+        for (auto buffer : m_buffers) {
+            if (buffer->objectName() == untitled_name) {
+                used = true;
+                break;
+            }
+        }
+        if (!used)
+            return untitled_name;
+
+        ++untitled_number;
+    }
+}
+
+void Window::update_window_title()
+{
+    setWindowTitle(m_active_buffer->objectName() + " - Qmacs");
+}
+
 Buffer* Window::create_buffer()
 {
-    auto new_buffer = new Buffer(this);
+    auto new_buffer = new Buffer(create_untitled_name(), this);
     m_buffers.append(new_buffer);
     return new_buffer;
 }
@@ -185,10 +212,12 @@ void Window::set_active_frame(Frame* frame)
 {
     m_active_frame = frame;
     m_active_buffer = qobject_cast<Buffer*>(frame->document());
+    update_window_title();
 }
 
 void Window::set_active_buffer(Buffer* buffer)
 {
     m_active_buffer = buffer;
     m_active_frame->setDocument(buffer);
+    update_window_title();
 }

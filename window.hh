@@ -24,6 +24,8 @@ private slots:
     void new_buffer();
 
 private:
+    QString create_untitled_name() const;
+    void update_window_title();
     Buffer* create_buffer();
     Frame* create_frame();
     void set_active_frame(Frame*);

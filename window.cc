@@ -72,7 +72,7 @@ void Window::horizontal_split_frame()
         splitter = new_splitter;
     }
 
-    splitter->addWidget(create_frame());
+    splitter->insertWidget(splitter->indexOf(m_active_frame) + 1, create_frame());
     m_active_frame->setFocus();
 }
 
@@ -94,7 +94,7 @@ void Window::vertical_split_frame()
         splitter = new_splitter;
     }
 
-    splitter->addWidget(create_frame());
+    splitter->insertWidget(splitter->indexOf(m_active_frame) + 1, create_frame());
     m_active_frame->setFocus();
 }
 

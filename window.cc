@@ -114,26 +114,45 @@ void Window::remove_this_frame()
     if (!splitter)
         return;
 
-    auto frames = findChildren<Frame*>();
-    auto active_frame_index = frames.indexOf(m_active_frame);
+    auto index_of_active_frame = splitter->indexOf(m_active_frame);
     delete m_active_frame;
-
-    frames = findChildren<Frame*>();
-    if (active_frame_index >= frames.count())
-        m_active_frame = frames[frames.count() - 1];
-    else
-        m_active_frame = frames[active_frame_index];
 
     if (splitter->count() == 1) {
         auto splitter_child = splitter->findChild<QWidget*>();
         auto splitter_parent = qobject_cast<QSplitter*>(splitter->parent());
         if (!splitter_parent) {
             setCentralWidget(splitter_child);
+            splitter_parent = qobject_cast<QSplitter*>(splitter_child);
+            index_of_active_frame = 0;
         } else {
             auto splitter_index = splitter_parent->indexOf(splitter);
             splitter_parent->replaceWidget(splitter_index, splitter_child);
+            index_of_active_frame = splitter_index;
         }
         delete splitter;
+        splitter = splitter_parent;
+    }
+
+    if (splitter) {
+        while (true) {
+            auto widget = splitter->widget(index_of_active_frame);
+            if (!widget) {
+                --index_of_active_frame;
+                continue;
+            }
+
+            auto widget_as_frame = qobject_cast<Frame*>(widget);
+            if (!widget_as_frame) {
+                index_of_active_frame = 0;
+                splitter = qobject_cast<QSplitter*>(widget);
+                continue;
+            }
+
+            m_active_frame = widget_as_frame;
+            break;
+        }
+    } else {
+        m_active_frame = qobject_cast<Frame*>(centralWidget());
     }
 
     m_active_frame->setFocus();

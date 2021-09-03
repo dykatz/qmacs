@@ -160,25 +160,65 @@ void Window::remove_this_frame()
 
 void Window::move_to_next_frame()
 {
-    auto frames = findChildren<Frame*>();
-    auto new_frame_index = frames.indexOf(m_active_frame) - 1;
+    auto splitter = qobject_cast<QSplitter*>(m_active_frame->parent());
+    if (!splitter)
+        return;
 
-    if (new_frame_index < 0)
-        new_frame_index = frames.count() - 1;
+    auto index_of_active_frame = splitter->indexOf(m_active_frame);
+    auto start_from_top = false;
+    while (index_of_active_frame == splitter->count() - 1) {
+        auto next_splitter = qobject_cast<QSplitter*>(splitter->parent());
+        if (!next_splitter) {
+            start_from_top = true;
+            break;
+        }
 
-    set_active_frame(frames[new_frame_index]);
+        index_of_active_frame = next_splitter->indexOf(splitter);
+        splitter = next_splitter;
+    }
+
+    auto next_element = start_from_top ? centralWidget() : splitter->widget(index_of_active_frame + 1);
+    auto next_element_as_frame = qobject_cast<Frame*>(next_element);
+
+    while (!next_element_as_frame) {
+        auto next_element_as_splitter = qobject_cast<QSplitter*>(next_element);
+        next_element = next_element_as_splitter->widget(0);
+        next_element_as_frame = qobject_cast<Frame*>(next_element);
+    }
+
+    set_active_frame(next_element_as_frame);
     m_active_frame->setFocus();
 }
 
 void Window::move_to_previous_frame()
 {
-    auto frames = findChildren<Frame*>();
-    auto new_frame_index = frames.indexOf(m_active_frame) + 1;
+    auto splitter = qobject_cast<QSplitter*>(m_active_frame->parent());
+    if (!splitter)
+        return;
 
-    if (new_frame_index >= frames.count())
-        new_frame_index = 0;
+    auto index_of_active_frame = splitter->indexOf(m_active_frame);
+    auto start_from_top = false;
+    while (index_of_active_frame == 0) {
+        auto next_splitter = qobject_cast<QSplitter*>(splitter->parent());
+        if (!next_splitter) {
+            start_from_top = true;
+            break;
+        }
 
-    set_active_frame(frames[new_frame_index]);
+        index_of_active_frame = next_splitter->indexOf(splitter);
+        splitter = next_splitter;
+    }
+
+    auto next_element = start_from_top ? centralWidget() : splitter->widget(index_of_active_frame - 1);
+    auto next_element_as_frame = qobject_cast<Frame*>(next_element);
+
+    while (!next_element_as_frame) {
+        auto next_element_as_splitter = qobject_cast<QSplitter*>(next_element);
+        next_element = next_element_as_splitter->widget(next_element_as_splitter->count() - 1);
+        next_element_as_frame = qobject_cast<Frame*>(next_element);
+    }
+
+    set_active_frame(next_element_as_frame);
     m_active_frame->setFocus();
 }
 

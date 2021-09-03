@@ -18,12 +18,12 @@ Window::Window()
     auto frame_menu = menuBar()->addMenu("F&rame");
 
     auto horizontal_split_frame_action = new QAction("Split &Horizontally", this);
-    horizontal_split_frame_action->setShortcut(Qt::CTRL | Qt::Key_2);
+    horizontal_split_frame_action->setShortcut(Qt::CTRL | Qt::Key_3);
     connect(horizontal_split_frame_action, &QAction::triggered, this, &Window::horizontal_split_frame);
     frame_menu->addAction(horizontal_split_frame_action);
 
     auto vertical_split_frame_action = new QAction("Split &Vertically", this);
-    vertical_split_frame_action->setShortcut(Qt::CTRL | Qt::Key_3);
+    vertical_split_frame_action->setShortcut(Qt::CTRL | Qt::Key_2);
     connect(vertical_split_frame_action, &QAction::triggered, this, &Window::vertical_split_frame);
     frame_menu->addAction(vertical_split_frame_action);
 

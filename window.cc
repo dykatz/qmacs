@@ -63,12 +63,14 @@ void Window::horizontal_split_frame()
     if (!splitter) {
         splitter = new QSplitter(this);
         splitter->addWidget(m_active_frame);
+        splitter->setSizes(QList<int>({INT_MAX}));
         setCentralWidget(splitter);
     } else if (splitter->orientation() != Qt::Horizontal) {
         auto index_of_current_frame = splitter->indexOf(m_active_frame);
         auto new_splitter = new QSplitter;
         splitter->replaceWidget(index_of_current_frame, new_splitter);
         new_splitter->addWidget(m_active_frame);
+        new_splitter->setSizes(QList<int>({INT_MAX}));
         splitter = new_splitter;
     }
 
@@ -84,6 +86,7 @@ void Window::vertical_split_frame()
         splitter = new QSplitter(this);
         splitter->setOrientation(Qt::Vertical);
         splitter->addWidget(m_active_frame);
+        splitter->setSizes(QList<int>({INT_MAX}));
         setCentralWidget(splitter);
     } else if (splitter->orientation() != Qt::Vertical) {
         auto index_of_current_frame = splitter->indexOf(m_active_frame);
@@ -91,6 +94,7 @@ void Window::vertical_split_frame()
         new_splitter->setOrientation(Qt::Vertical);
         splitter->replaceWidget(index_of_current_frame, new_splitter);
         new_splitter->addWidget(m_active_frame);
+        new_splitter->setSizes(QList<int>({INT_MAX}));
         splitter = new_splitter;
     }
 

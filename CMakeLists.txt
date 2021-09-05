@@ -15,6 +15,7 @@ find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(qmacs
 	buffer.cc
+	buffer-model.cc
 	frame.cc
 	main.cc
 	window.cc

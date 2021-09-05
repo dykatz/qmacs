@@ -47,6 +47,7 @@ Window::Window()
     connect(move_to_previous_frame_action, &QAction::triggered, this, &Window::move_to_previous_frame);
     frame_menu->addAction(move_to_previous_frame_action);
 
+    m_buffer_model = new BufferModel(this);
     m_active_buffer = create_buffer();
 
     auto first_frame = create_frame();
@@ -238,8 +239,8 @@ QString Window::create_untitled_name() const
         QString untitled_name = QStringLiteral("*untitled-%1*").arg(untitled_number);
 
         bool used = false;
-        for (auto buffer : m_buffers) {
-            if (buffer->objectName() == untitled_name) {
+        for (int row = 0; row < m_buffer_model->rowCount(); ++row) {
+            if (m_buffer_model->index(row, 0).data() == untitled_name) {
                 used = true;
                 break;
             }
@@ -259,7 +260,7 @@ void Window::update_window_title()
 Buffer* Window::create_buffer()
 {
     auto new_buffer = new Buffer(create_untitled_name(), this);
-    m_buffers.append(new_buffer);
+    m_buffer_model->add_buffer(new_buffer, "", "text");
     return new_buffer;
 }
 

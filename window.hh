@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 #include "buffer.hh"
+#include "buffer-model.hh"
 #include "frame.hh"
 
 class Window : public QMainWindow
@@ -33,5 +34,5 @@ private:
 
     Buffer* m_active_buffer;
     Frame* m_active_frame;
-    QList<Buffer*> m_buffers;
+    BufferModel* m_buffer_model;
 };

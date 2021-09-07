@@ -66,3 +66,8 @@ void BufferModel::add_buffer(Buffer* buffer, QString file_path, QString edit_mod
     m_model_items.emplaceFront(buffer, file_path, edit_mode);
     endInsertRows();
 }
+
+Buffer* BufferModel::buffer_from_row(int row) const
+{
+    return m_model_items[row].buffer;
+}

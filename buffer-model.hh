@@ -29,6 +29,7 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void add_buffer(Buffer* buffer, QString file_path, QString edit_mode);
+    Buffer* buffer_from_row(int row) const;
 
 private:
     QList<BufferModelItem> m_model_items;

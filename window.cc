@@ -250,6 +250,7 @@ void Window::open_buffer()
         for (int row = 0; row < m_buffer_model->rowCount(); ++row) {
             if (m_buffer_model->index(row, 1).data() == file_path) {
                 file_already_open = true;
+                new_active_buffer = m_buffer_model->buffer_from_row(row);
                 break;
             }
         }

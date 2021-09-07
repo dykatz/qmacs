@@ -1,4 +1,5 @@
 #include <QAction>
+#include <QFileDialog>
 #include <QMenu>
 #include <QMenuBar>
 #include <QSplitter>
@@ -14,6 +15,11 @@ Window::Window()
     new_buffer_action->setShortcut(QKeySequence::New);
     connect(new_buffer_action, &QAction::triggered, this, &Window::new_buffer);
     file_menu->addAction(new_buffer_action);
+
+    auto open_buffer_action = new QAction("&Open File", this);
+    open_buffer_action->setShortcut(QKeySequence::Open);
+    connect(open_buffer_action, &QAction::triggered, this, &Window::open_buffer);
+    file_menu->addAction(open_buffer_action);
 
     auto frame_menu = menuBar()->addMenu("F&rame");
 
@@ -230,6 +236,43 @@ void Window::move_to_previous_frame()
 void Window::new_buffer()
 {
     set_active_buffer(create_buffer());
+}
+
+void Window::open_buffer()
+{
+    auto file_paths = QFileDialog::getOpenFileNames(this, "Select files to open...");
+    if (file_paths.count() == 0)
+        return;
+
+    Buffer* new_active_buffer = nullptr;
+    for (auto file_path : file_paths) {
+        auto file_already_open = false;
+        for (int row = 0; row < m_buffer_model->rowCount(); ++row) {
+            if (m_buffer_model->index(row, 1).data() == file_path) {
+                file_already_open = true;
+                break;
+            }
+        }
+        if (file_already_open)
+            continue;
+
+        QFile file(file_path);
+        if (!file.open(QIODevice::ReadOnly | QFile::Text))
+            continue;
+
+        auto file_name = QUrl(file_path).fileName();
+        auto file_buffer = new Buffer(file_name, this);
+
+        QTextStream file_stream(&file);
+        auto file_contents = file_stream.readAll();
+        file.close();
+        file_buffer->setPlainText(file_contents);
+
+        m_buffer_model->add_buffer(file_buffer, file_path, "text");
+        new_active_buffer = file_buffer;
+    }
+    if (new_active_buffer != nullptr)
+        set_active_buffer(new_active_buffer);
 }
 
 QString Window::create_untitled_name() const

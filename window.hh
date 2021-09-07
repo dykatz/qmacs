@@ -23,6 +23,7 @@ private slots:
     void move_to_next_frame();
     void move_to_previous_frame();
     void new_buffer();
+    void open_buffer();
 
 private:
     QString create_untitled_name() const;

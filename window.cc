@@ -256,6 +256,7 @@ void Window::open_buffer()
         return;
 
     Buffer* new_active_buffer = nullptr;
+    QStringList error_messages;
     for (auto file_path : file_paths) {
         auto file_already_open = false;
         for (int row = 0; row < m_buffer_model->rowCount(); ++row) {
@@ -269,8 +270,10 @@ void Window::open_buffer()
             continue;
 
         QFile file(file_path);
-        if (!file.open(QIODevice::ReadOnly | QFile::Text))
+        if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
+            error_messages.append(file.errorString());
             continue;
+        }
 
         auto file_name = QUrl(file_path).fileName();
         auto file_buffer = new Buffer(file_name, this);
@@ -285,6 +288,8 @@ void Window::open_buffer()
     }
     if (new_active_buffer != nullptr)
         set_active_buffer(new_active_buffer);
+    if (error_messages.count() > 0)
+        QMessageBox::warning(this, "Warning", "Could not open files:\n" + error_messages.join("\n"));
 }
 
 void Window::save_buffer()

@@ -2,6 +2,7 @@
 #include <QFileDialog>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QSplitter>
 
 #include "window.hh"
@@ -20,6 +21,16 @@ Window::Window()
     open_buffer_action->setShortcut(QKeySequence::Open);
     connect(open_buffer_action, &QAction::triggered, this, &Window::open_buffer);
     file_menu->addAction(open_buffer_action);
+
+    auto save_buffer_action = new QAction("&Save File", this);
+    save_buffer_action->setShortcut(QKeySequence::Save);
+    connect(save_buffer_action, &QAction::triggered, this, &Window::save_buffer);
+    file_menu->addAction(save_buffer_action);
+
+    auto save_buffer_as_action = new QAction("S&ave File As", this);
+    save_buffer_as_action->setShortcut(QKeySequence::SaveAs);
+    connect(save_buffer_as_action, &QAction::triggered, this, &Window::save_buffer_as);
+    file_menu->addAction(save_buffer_as_action);
 
     auto frame_menu = menuBar()->addMenu("F&rame");
 
@@ -274,6 +285,45 @@ void Window::open_buffer()
     }
     if (new_active_buffer != nullptr)
         set_active_buffer(new_active_buffer);
+}
+
+void Window::save_buffer()
+{
+    auto file_path = m_buffer_model->file_path_for_buffer(m_active_buffer);
+    if (file_path.isEmpty()) {
+        save_buffer_as();
+        return;
+    }
+
+    QFile this_file(file_path);
+    if (!this_file.open(QFile::WriteOnly | QFile::Text)) {
+        QMessageBox::warning(this, "Warning", "Could not save file: " + this_file.errorString());
+        return;
+    }
+
+    QTextStream file_stream(&this_file);
+    file_stream << m_active_buffer->toPlainText();
+    this_file.close();
+}
+
+void Window::save_buffer_as()
+{
+    auto new_file_path = QFileDialog::getSaveFileName(this, "Save file as...");
+    if (new_file_path.isEmpty())
+        return;
+
+    QFile new_file(new_file_path);
+    if (!new_file.open(QFile::WriteOnly | QFile::Text)) {
+        QMessageBox::warning(this, "Warning", "Could not save file: " + new_file.errorString());
+        return;
+    }
+
+    QTextStream file_stream(&new_file);
+    file_stream << m_active_buffer->toPlainText();
+    new_file.close();
+
+    m_buffer_model->set_file_path_for_buffer(m_active_buffer, new_file_path);
+    set_active_buffer(m_active_buffer);
 }
 
 QString Window::create_untitled_name() const

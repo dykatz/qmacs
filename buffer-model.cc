@@ -67,6 +67,35 @@ void BufferModel::add_buffer(Buffer* buffer, QString file_path, QString edit_mod
     endInsertRows();
 }
 
+void BufferModel::set_file_path_for_buffer(Buffer* buffer, QString file_path)
+{
+    int row_of_buffer = -1;
+    for (int row = 0; row < m_model_items.count(); ++row) {
+        if (m_model_items[row].buffer == buffer) {
+            row_of_buffer = row;
+            break;
+        }
+    }
+    if (row_of_buffer == -1)
+        return;
+
+    auto file_name = QUrl(file_path).fileName();
+    buffer->setObjectName(file_name);
+    m_model_items[row_of_buffer].buffer_name = file_name;
+    m_model_items[row_of_buffer].file_path = file_path;
+
+    emit dataChanged(index(row_of_buffer, 0), index(row_of_buffer, 1));
+}
+
+QString BufferModel::file_path_for_buffer(Buffer* buffer) const
+{
+    for (int row = 0; row < m_model_items.count(); ++row) {
+        if (m_model_items[row].buffer == buffer)
+            return m_model_items[row].file_path;
+    }
+    return "";
+}
+
 Buffer* BufferModel::buffer_from_row(int row) const
 {
     return m_model_items[row].buffer;

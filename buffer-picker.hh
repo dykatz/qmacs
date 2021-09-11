@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDialog>
+#include <QSortFilterProxyModel>
 
 #include "buffer-model.hh"
 
@@ -17,6 +18,6 @@ public slots:
     int result_row() const { return m_result_row; }
 
 private:
-    BufferModel* m_buffer_model;
+    QSortFilterProxyModel* m_buffer_model_filter_model;
     int m_result_row { -1 };
 };

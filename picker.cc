@@ -20,10 +20,16 @@ Picker::Picker(QAbstractItemModel* model, QWidget* parent)
     model_view->selectRow(0);
     connect(filter_line_edit, &QLineEdit::textChanged, model_view, [=] { model_view->selectRow(0); });
     connect(filter_line_edit, &PickerLineEdit::up_key_pressed, model_view, [=] {
-        model_view->selectRow(model_view->currentIndex().row() - 1);
+        auto current_row = model_view->currentIndex().row() - 1;
+        if (current_row == -1)
+            current_row = m_filter_model->rowCount() - 1;
+        model_view->selectRow(current_row);
     });
     connect(filter_line_edit, &PickerLineEdit::down_key_pressed, model_view, [=] {
-        model_view->selectRow(model_view->currentIndex().row() + 1);
+        auto current_row = model_view->currentIndex().row() + 1;
+        if (current_row == m_filter_model->rowCount())
+            current_row = 0;
+        model_view->selectRow(current_row);
     });
 
     auto layout = new QVBoxLayout;

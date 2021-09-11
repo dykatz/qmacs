@@ -26,6 +26,7 @@ private slots:
     void open_buffer();
     void save_buffer();
     void save_buffer_as();
+    void switch_buffer();
 
 private:
     QString create_untitled_name() const;

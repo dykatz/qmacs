@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QSplitter>
 
+#include "buffer-picker.hh"
 #include "window.hh"
 
 Window::Window()
@@ -31,6 +32,11 @@ Window::Window()
     save_buffer_as_action->setShortcut(QKeySequence::SaveAs);
     connect(save_buffer_as_action, &QAction::triggered, this, &Window::save_buffer_as);
     file_menu->addAction(save_buffer_as_action);
+
+    auto switch_buffer_action = new QAction("Switch &Buffer", this);
+    switch_buffer_action->setShortcut(Qt::CTRL | Qt::Key_B);
+    connect(switch_buffer_action, &QAction::triggered, this, &Window::switch_buffer);
+    file_menu->addAction(switch_buffer_action);
 
     auto frame_menu = menuBar()->addMenu("F&rame");
 
@@ -335,6 +341,17 @@ void Window::save_buffer_as()
     m_active_buffer->set_file_path(new_file_path);
     m_active_buffer->setModified(false);
     set_active_buffer(m_active_buffer);
+}
+
+void Window::switch_buffer()
+{
+    auto buffer_picker = new BufferPicker(m_buffer_model, this);
+
+    connect(buffer_picker, &QDialog::accepted, this, [=] {
+        set_active_buffer(m_buffer_model->buffer_from_row(buffer_picker->result_row()));
+    });
+
+    buffer_picker->open();
 }
 
 QString Window::create_untitled_name() const

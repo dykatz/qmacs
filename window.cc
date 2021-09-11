@@ -353,10 +353,12 @@ void Window::save_buffer_as()
 
 void Window::switch_buffer()
 {
-    auto buffer_picker = new Picker(m_buffer_model, 0, this);
+    auto buffer_picker = new Picker(m_buffer_model, 1, this);
 
     connect(buffer_picker, &QDialog::accepted, this, [=] {
-        set_active_buffer(m_buffer_model->buffer_from_row(buffer_picker->result_row()));
+        auto buffer_row = buffer_picker->result_row();
+        set_active_buffer(m_buffer_model->buffer_from_row(buffer_row));
+        m_buffer_model->move_buffer_to_top(buffer_row);
     });
 
     buffer_picker->open();

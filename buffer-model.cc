@@ -81,6 +81,13 @@ void BufferModel::remove_buffer(int buffer_index)
     endRemoveRows();
 }
 
+void BufferModel::move_buffer_to_top(int buffer_index)
+{
+    beginMoveRows(QModelIndex(), buffer_index, buffer_index, QModelIndex(), 0);
+    m_buffers.move(buffer_index, 0);
+    endMoveRows();
+}
+
 int BufferModel::row_from_buffer(Buffer* buffer) const
 {
     for (int row = 0; row < m_buffers.count(); ++row) {

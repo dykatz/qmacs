@@ -19,6 +19,7 @@ public:
 
     void add_buffer(Buffer* buffer);
     void remove_buffer(int buffer_index);
+    void move_buffer_to_top(int buffer_index);
     Buffer* buffer_from_row(int row) const;
     int row_from_buffer(Buffer* buffer) const;
 

@@ -1,19 +1,12 @@
 #include "buffer-model.hh"
 
-BufferModelItem::BufferModelItem(Buffer* buffer, QString file_path, QString edit_mode)
-    : buffer(buffer)
-    , buffer_name(buffer->objectName())
-    , file_path(file_path)
-    , edit_mode(edit_mode)
-{}
-
 BufferModel::BufferModel(QObject* parent)
     : QAbstractTableModel(parent)
 {}
 
 int BufferModel::rowCount(QModelIndex const& parent) const
 {
-    return m_model_items.count();
+    return m_buffers.count();
 }
 
 int BufferModel::columnCount(QModelIndex const& parent) const
@@ -29,15 +22,15 @@ QVariant BufferModel::data(QModelIndex const& index, int role) const
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    if (index.row() >= m_model_items.count())
+    if (index.row() >= m_buffers.count())
         return QVariant();
 
-    auto& model_item = m_model_items[index.row()];
+    auto buffer = m_buffers[index.row()];
     switch (index.column()) {
-        case 0: return model_item.buffer_name;
-        case 1: return model_item.file_path;
-        case 2: return model_item.edit_mode;
-        case 3: return model_item.buffer->isModified();
+        case 0: return buffer->objectName();
+        case 1: return buffer->file_path();
+        case 2: return buffer->edit_mode();
+        case 3: return buffer->isModified();
         default: return QVariant();
     }
 }
@@ -59,44 +52,32 @@ QVariant BufferModel::headerData(int section, Qt::Orientation orientation, int r
     }
 }
 
-void BufferModel::add_buffer(Buffer* buffer, QString file_path, QString edit_mode)
+void BufferModel::add_buffer(Buffer* buffer)
 {
     beginInsertRows(QModelIndex(), 0, 1);
-    m_model_items.emplaceFront(buffer, file_path, edit_mode);
+    m_buffers.push_front(buffer);
     endInsertRows();
 
     connect(buffer, &QTextDocument::modificationChanged, this, [=](bool changed) {
         int row_of_buffer = row_from_buffer(buffer);
         emit dataChanged(index(row_of_buffer, 3), index(row_of_buffer, 3));
     });
-}
 
-void BufferModel::set_file_path_for_buffer(Buffer* buffer, QString file_path)
-{
-    int row_of_buffer = row_from_buffer(buffer);
-    if (row_of_buffer == -1)
-        return;
+    connect(buffer, &Buffer::edit_mode_changed, this, [=](QString edit_mode) {
+        int row_of_buffer = row_from_buffer(buffer);
+        emit dataChanged(index(row_of_buffer, 2), index(row_of_buffer, 2));
+    });
 
-    auto file_name = QUrl(file_path).fileName();
-    buffer->setObjectName(file_name);
-    m_model_items[row_of_buffer].buffer_name = file_name;
-    m_model_items[row_of_buffer].file_path = file_path;
-
-    emit dataChanged(index(row_of_buffer, 0), index(row_of_buffer, 1));
-}
-
-QString BufferModel::file_path_for_buffer(Buffer* buffer) const
-{
-    int row_of_buffer = row_from_buffer(buffer);
-    if (row_of_buffer == -1)
-        return "";
-    return m_model_items[row_of_buffer].file_path;
+    connect(buffer, &Buffer::file_path_changed, this, [=](QString file_path) {
+        int row_of_buffer = row_from_buffer(buffer);
+        emit dataChanged(index(row_of_buffer, 0), index(row_of_buffer, 1));
+    });
 }
 
 int BufferModel::row_from_buffer(Buffer* buffer) const
 {
-    for (int row = 0; row < m_model_items.count(); ++row) {
-        if (m_model_items[row].buffer == buffer)
+    for (int row = 0; row < m_buffers.count(); ++row) {
+        if (m_buffers[row] == buffer)
             return row;
     }
     return -1;
@@ -104,5 +85,5 @@ int BufferModel::row_from_buffer(Buffer* buffer) const
 
 Buffer* BufferModel::buffer_from_row(int row) const
 {
-    return m_model_items[row].buffer;
+    return m_buffers[row];
 }

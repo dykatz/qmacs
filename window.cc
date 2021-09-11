@@ -275,15 +275,15 @@ void Window::open_buffer()
             continue;
         }
 
-        auto file_name = QUrl(file_path).fileName();
-        auto file_buffer = new Buffer(file_name, this);
+        auto file_buffer = new Buffer("", this);
+        file_buffer->set_file_path(file_path);
 
         QTextStream file_stream(&file);
         auto file_contents = file_stream.readAll();
         file.close();
         file_buffer->setPlainText(file_contents);
 
-        m_buffer_model->add_buffer(file_buffer, file_path, "text");
+        m_buffer_model->add_buffer(file_buffer);
         new_active_buffer = file_buffer;
     }
     if (new_active_buffer != nullptr)
@@ -294,7 +294,7 @@ void Window::open_buffer()
 
 void Window::save_buffer()
 {
-    auto file_path = m_buffer_model->file_path_for_buffer(m_active_buffer);
+    auto file_path = m_active_buffer->file_path();
     if (file_path.isEmpty()) {
         save_buffer_as();
         return;
@@ -329,7 +329,7 @@ void Window::save_buffer_as()
     file_stream << m_active_buffer->toPlainText();
     new_file.close();
 
-    m_buffer_model->set_file_path_for_buffer(m_active_buffer, new_file_path);
+    m_active_buffer->set_file_path(new_file_path);
     m_active_buffer->setModified(false);
     set_active_buffer(m_active_buffer);
 }
@@ -362,7 +362,7 @@ void Window::update_window_title()
 Buffer* Window::create_buffer()
 {
     auto new_buffer = new Buffer(create_untitled_name(), this);
-    m_buffer_model->add_buffer(new_buffer, "", "text");
+    m_buffer_model->add_buffer(new_buffer);
     return new_buffer;
 }
 

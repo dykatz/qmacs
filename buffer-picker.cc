@@ -1,3 +1,4 @@
+#include <QKeyEvent>
 #include <QLineEdit>
 #include <QTableView>
 #include <QVBoxLayout>
@@ -7,7 +8,7 @@
 BufferPicker::BufferPicker(BufferModel* model, QWidget* parent)
     : QDialog(parent, Qt::WindowFlags())
 {
-    auto filter_line_edit = new QLineEdit(this);
+    auto filter_line_edit = new BufferPickerLineEdit(this);
     m_buffer_model_filter_model = new QSortFilterProxyModel(this);
     m_buffer_model_filter_model->setSourceModel(model);
     connect(filter_line_edit, &QLineEdit::textChanged, m_buffer_model_filter_model, &QSortFilterProxyModel::setFilterWildcard);
@@ -18,6 +19,12 @@ BufferPicker::BufferPicker(BufferModel* model, QWidget* parent)
     buffer_model_view->setSelectionBehavior(QAbstractItemView::SelectRows);
     buffer_model_view->selectRow(0);
     connect(filter_line_edit, &QLineEdit::textChanged, buffer_model_view, [=] { buffer_model_view->selectRow(0); });
+    connect(filter_line_edit, &BufferPickerLineEdit::up_key_pressed, buffer_model_view, [=] {
+        buffer_model_view->selectRow(buffer_model_view->currentIndex().row() - 1);
+    });
+    connect(filter_line_edit, &BufferPickerLineEdit::down_key_pressed, buffer_model_view, [=] {
+        buffer_model_view->selectRow(buffer_model_view->currentIndex().row() + 1);
+    });
 
     auto layout = new QVBoxLayout;
     layout->addWidget(filter_line_edit);

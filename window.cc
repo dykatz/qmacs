@@ -38,6 +38,11 @@ Window::Window()
     connect(switch_buffer_action, &QAction::triggered, this, &Window::switch_buffer);
     file_menu->addAction(switch_buffer_action);
 
+    auto close_buffer_action = new QAction("&Close Buffer", this);
+    close_buffer_action->setShortcut(Qt::CTRL | Qt::Key_K);
+    connect(close_buffer_action, &QAction::triggered, this, &Window::close_buffer);
+    file_menu->addAction(close_buffer_action);
+
     auto frame_menu = menuBar()->addMenu("F&rame");
 
     auto horizontal_split_frame_action = new QAction("Split &Horizontally", this);
@@ -132,9 +137,11 @@ void Window::remove_other_frames()
     auto central_widget = centralWidget();
     if (central_widget == m_active_frame)
         return;
+    m_frames.clear();
     setCentralWidget(m_active_frame);
     delete central_widget;
     m_active_frame->setFocus();
+    m_frames.append(m_active_frame);
 }
 
 void Window::remove_this_frame()
@@ -144,6 +151,7 @@ void Window::remove_this_frame()
         return;
 
     auto index_of_active_frame = splitter->indexOf(m_active_frame);
+    m_frames.removeAll(m_active_frame);
     delete m_active_frame;
 
     if (splitter->count() == 1) {
@@ -354,6 +362,21 @@ void Window::switch_buffer()
     buffer_picker->open();
 }
 
+void Window::close_buffer()
+{
+    auto buffer_picker = new BufferPicker(m_buffer_model, this);
+
+    connect(buffer_picker, &QDialog::accepted, this, [=] {
+        auto buffer_row = buffer_picker->result_row();
+        auto original_buffer = m_buffer_model->buffer_from_row(buffer_row);
+        m_buffer_model->remove_buffer(buffer_row);
+        auto replacement_buffer = m_buffer_model->buffer_from_row(0);
+        replace_buffers_in_frames(original_buffer, replacement_buffer);
+    });
+
+    buffer_picker->open();
+}
+
 QString Window::create_untitled_name() const
 {
     int untitled_number = 1;
@@ -388,8 +411,25 @@ Frame* Window::create_frame()
 {
     auto new_frame = new Frame;
     new_frame->setDocument(m_active_buffer);
+    m_frames.push_back(new_frame);
     connect(new_frame, &Frame::gained_focus, this, [=]{ set_active_frame(new_frame); });
     return new_frame;
+}
+
+void Window::replace_buffers_in_frames(Buffer* original, Buffer* replacement)
+{
+    if (replacement == nullptr) {
+        replacement = new Buffer(create_untitled_name(), this);
+        connect_buffer(replacement);
+    }
+
+    for (auto frame : m_frames) {
+        auto frame_buffer = qobject_cast<Buffer*>(frame->document());
+        if (frame_buffer == original)
+            frame->setDocument(replacement);
+    }
+
+    set_active_frame(m_active_frame);
 }
 
 void Window::set_active_frame(Frame* frame)

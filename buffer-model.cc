@@ -54,7 +54,7 @@ QVariant BufferModel::headerData(int section, Qt::Orientation orientation, int r
 
 void BufferModel::add_buffer(Buffer* buffer)
 {
-    beginInsertRows(QModelIndex(), 0, 1);
+    beginInsertRows(QModelIndex(), 0, 0);
     m_buffers.push_front(buffer);
     endInsertRows();
 
@@ -74,6 +74,13 @@ void BufferModel::add_buffer(Buffer* buffer)
     });
 }
 
+void BufferModel::remove_buffer(int buffer_index)
+{
+    beginRemoveRows(QModelIndex(), buffer_index, buffer_index);
+    m_buffers.removeAt(buffer_index);
+    endRemoveRows();
+}
+
 int BufferModel::row_from_buffer(Buffer* buffer) const
 {
     for (int row = 0; row < m_buffers.count(); ++row) {
@@ -85,5 +92,7 @@ int BufferModel::row_from_buffer(Buffer* buffer) const
 
 Buffer* BufferModel::buffer_from_row(int row) const
 {
-    return m_buffers[row];
+    if (row >= 0 && row < m_buffers.count())
+        return m_buffers[row];
+    return nullptr;
 }

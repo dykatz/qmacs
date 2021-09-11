@@ -18,6 +18,7 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void add_buffer(Buffer* buffer);
+    void remove_buffer(int buffer_index);
     Buffer* buffer_from_row(int row) const;
     int row_from_buffer(Buffer* buffer) const;
 

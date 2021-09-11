@@ -309,6 +309,8 @@ void Window::save_buffer()
     QTextStream file_stream(&this_file);
     file_stream << m_active_buffer->toPlainText();
     this_file.close();
+
+    m_active_buffer->setModified(false);
 }
 
 void Window::save_buffer_as()
@@ -328,6 +330,7 @@ void Window::save_buffer_as()
     new_file.close();
 
     m_buffer_model->set_file_path_for_buffer(m_active_buffer, new_file_path);
+    m_active_buffer->setModified(false);
     set_active_buffer(m_active_buffer);
 }
 

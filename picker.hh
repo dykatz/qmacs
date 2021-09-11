@@ -5,14 +5,12 @@
 #include <QLineEdit>
 #include <QSortFilterProxyModel>
 
-#include "buffer-model.hh"
-
-class BufferPickerLineEdit final : public QLineEdit
+class PickerLineEdit final : public QLineEdit
 {
     Q_OBJECT
 
 public:
-    BufferPickerLineEdit(QWidget* parent)
+    PickerLineEdit(QWidget* parent)
         : QLineEdit(parent)
     {}
 
@@ -31,19 +29,19 @@ signals:
     void down_key_pressed();
 };
 
-class BufferPicker : public QDialog
+class Picker : public QDialog
 {
     Q_OBJECT
 
 public:
-    BufferPicker(BufferModel*, QWidget*);
-    ~BufferPicker() = default;
+    Picker(QAbstractItemModel*, QWidget*);
+    ~Picker() = default;
 
 public slots:
     void select_buffer(QModelIndex const&);
     int result_row() const { return m_result_row; }
 
 private:
-    QSortFilterProxyModel* m_buffer_model_filter_model;
+    QSortFilterProxyModel* m_filter_model;
     int m_result_row { -1 };
 };

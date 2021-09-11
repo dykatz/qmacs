@@ -353,7 +353,7 @@ void Window::save_buffer_as()
 
 void Window::switch_buffer()
 {
-    auto buffer_picker = new Picker(m_buffer_model, this);
+    auto buffer_picker = new Picker(m_buffer_model, 0, this);
 
     connect(buffer_picker, &QDialog::accepted, this, [=] {
         set_active_buffer(m_buffer_model->buffer_from_row(buffer_picker->result_row()));
@@ -364,7 +364,7 @@ void Window::switch_buffer()
 
 void Window::close_buffer()
 {
-    auto buffer_picker = new Picker(m_buffer_model, this);
+    auto buffer_picker = new Picker(m_buffer_model, m_buffer_model->row_from_buffer(m_active_buffer), this);
 
     connect(buffer_picker, &QDialog::accepted, this, [=] {
         auto buffer_row = buffer_picker->result_row();

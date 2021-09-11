@@ -5,7 +5,7 @@
 
 #include "picker.hh"
 
-Picker::Picker(QAbstractItemModel* model, QWidget* parent)
+Picker::Picker(QAbstractItemModel* model, int initial_row, QWidget* parent)
     : QDialog(parent, Qt::WindowFlags())
 {
     auto filter_line_edit = new PickerLineEdit(this);
@@ -17,7 +17,7 @@ Picker::Picker(QAbstractItemModel* model, QWidget* parent)
     model_view->setModel(m_filter_model);
     model_view->setSelectionMode(QAbstractItemView::SingleSelection);
     model_view->setSelectionBehavior(QAbstractItemView::SelectRows);
-    model_view->selectRow(0);
+    model_view->selectRow(initial_row < m_filter_model->rowCount() ? initial_row : 0);
     connect(filter_line_edit, &QLineEdit::textChanged, model_view, [=] { model_view->selectRow(0); });
     connect(filter_line_edit, &PickerLineEdit::up_key_pressed, model_view, [=] {
         auto current_row = model_view->currentIndex().row() - 1;

@@ -34,7 +34,7 @@ class Picker : public QDialog
     Q_OBJECT
 
 public:
-    Picker(QAbstractItemModel*, QWidget*);
+    Picker(QAbstractItemModel*, int, QWidget*);
     ~Picker() = default;
 
 public slots:

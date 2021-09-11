@@ -30,7 +30,7 @@ private slots:
 private:
     QString create_untitled_name() const;
     void update_window_title();
-    Buffer* create_buffer();
+    void connect_buffer(Buffer*);
     Frame* create_frame();
     void set_active_frame(Frame*);
     void set_active_buffer(Buffer*);

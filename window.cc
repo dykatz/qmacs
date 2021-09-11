@@ -65,7 +65,8 @@ Window::Window()
     frame_menu->addAction(move_to_previous_frame_action);
 
     m_buffer_model = new BufferModel(this);
-    m_active_buffer = create_buffer();
+    m_active_buffer = new Buffer(create_untitled_name(), this);
+    connect_buffer(m_active_buffer);
 
     auto first_frame = create_frame();
     m_active_frame = first_frame;
@@ -246,7 +247,9 @@ void Window::move_to_previous_frame()
 
 void Window::new_buffer()
 {
-    set_active_buffer(create_buffer());
+    auto buffer = new Buffer(create_untitled_name(), this);
+    connect_buffer(buffer);
+    set_active_buffer(buffer);
 }
 
 void Window::open_buffer()
@@ -283,7 +286,7 @@ void Window::open_buffer()
         file.close();
         file_buffer->setPlainText(file_contents);
 
-        m_buffer_model->add_buffer(file_buffer);
+        connect_buffer(file_buffer);
         new_active_buffer = file_buffer;
     }
     if (new_active_buffer != nullptr)
@@ -359,11 +362,9 @@ void Window::update_window_title()
     setWindowTitle(m_active_buffer->objectName() + " - Qmacs");
 }
 
-Buffer* Window::create_buffer()
+void Window::connect_buffer(Buffer* buffer)
 {
-    auto new_buffer = new Buffer(create_untitled_name(), this);
-    m_buffer_model->add_buffer(new_buffer);
-    return new_buffer;
+    m_buffer_model->add_buffer(buffer);
 }
 
 Frame* Window::create_frame()

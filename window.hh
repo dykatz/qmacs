@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QFileSystemWatcher>
 #include <QList>
 #include <QMainWindow>
 
@@ -29,6 +30,7 @@ private slots:
     void save_all_buffers();
     void switch_buffer();
     void close_buffer();
+    void externally_modified_buffer(QString const&);
 
 protected:
     virtual void closeEvent(QCloseEvent*) override;
@@ -39,6 +41,7 @@ private:
     void connect_buffer(Buffer*);
     Frame* create_frame();
     void replace_buffers_in_frames(Buffer*, Buffer*);
+    QString unwatched_buffer_write(Buffer*);
     void set_active_frame(Frame*);
     void set_active_buffer(Buffer*);
 
@@ -46,4 +49,5 @@ private:
     Frame* m_active_frame;
     BufferModel* m_buffer_model;
     QList<Frame*> m_frames;
+    QFileSystemWatcher* m_watcher;
 };

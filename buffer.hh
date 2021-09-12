@@ -11,6 +11,8 @@ public:
     Buffer(QString const&, QWidget*);
     virtual ~Buffer() = default;
 
+    QString read();
+    QString write();
     QString file_path() const { return m_file_path; }
     QString edit_mode() const { return m_edit_mode; }
 

@@ -80,6 +80,9 @@ Window::Window()
     connect(move_to_previous_frame_action, &QAction::triggered, this, &Window::move_to_previous_frame);
     frame_menu->addAction(move_to_previous_frame_action);
 
+    m_watcher = new QFileSystemWatcher;
+    connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &Window::externally_modified_buffer);
+
     m_buffer_model = new BufferModel(this);
     m_active_buffer = new Buffer(create_untitled_name(), this);
     connect_buffer(m_active_buffer);
@@ -291,19 +294,15 @@ void Window::open_buffer()
         if (file_already_open)
             continue;
 
-        QFile file(file_path);
-        if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
-            error_messages.append(file.errorString());
-            continue;
-        }
-
         auto file_buffer = new Buffer("", this);
         file_buffer->set_file_path(file_path);
 
-        QTextStream file_stream(&file);
-        auto file_contents = file_stream.readAll();
-        file.close();
-        file_buffer->setPlainText(file_contents);
+        auto read_error = file_buffer->read();
+        if (!read_error.isEmpty()) {
+            error_messages.append(read_error);
+            delete file_buffer;
+            continue;
+        }
 
         connect_buffer(file_buffer);
         new_active_buffer = file_buffer;
@@ -322,17 +321,11 @@ void Window::save_buffer()
         return;
     }
 
-    QFile this_file(file_path);
-    if (!this_file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, "Warning", "Could not save file: " + this_file.errorString());
+    auto write_error = unwatched_buffer_write(m_active_buffer);
+    if (!write_error.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Could not save file: " + write_error);
         return;
     }
-
-    QTextStream file_stream(&this_file);
-    file_stream << m_active_buffer->toPlainText();
-    this_file.close();
-
-    m_active_buffer->setModified(false);
 }
 
 void Window::save_buffer_as()
@@ -341,18 +334,20 @@ void Window::save_buffer_as()
     if (new_file_path.isEmpty())
         return;
 
-    QFile new_file(new_file_path);
-    if (!new_file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, "Warning", "Could not save file: " + new_file.errorString());
+    auto old_file_name = m_active_buffer->objectName();
+    auto old_file_path = m_active_buffer->file_path();
+    m_active_buffer->set_file_path(new_file_path);
+
+    auto write_error = m_active_buffer->write();
+    if (!write_error.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Could not save file: " + write_error);
+        m_active_buffer->set_file_path(old_file_path);
+        m_active_buffer->setObjectName(old_file_name);
         return;
     }
 
-    QTextStream file_stream(&new_file);
-    file_stream << m_active_buffer->toPlainText();
-    new_file.close();
-
-    m_active_buffer->set_file_path(new_file_path);
-    m_active_buffer->setModified(false);
+    m_watcher->removePath(old_file_path);
+    m_watcher->addPath(new_file_path);
     set_active_buffer(m_active_buffer);
 }
 
@@ -371,17 +366,11 @@ void Window::save_all_buffers()
             continue;
         }
 
-        QFile file(file_path);
-        if (!file.open(QFile::WriteOnly | QFile::Text)) {
-            QMessageBox::warning(this, "Warning", "Could not save file: " + file.errorString());
+        auto write_error = unwatched_buffer_write(buffer);
+        if (!write_error.isEmpty()) {
+            QMessageBox::warning(this, "Warning", "Could not save file: " + write_error);
             continue;
         }
-
-        QTextStream file_stream(&file);
-        file_stream << buffer->toPlainText();
-        file.close();
-
-        buffer->setModified(false);
     }
 
     if (untracked_buffers.count() > 0) {
@@ -432,11 +421,38 @@ void Window::close_buffer()
         }
 
         m_buffer_model->remove_buffer(buffer_row);
+        m_watcher->removePath(original_buffer->file_path());
         auto replacement_buffer = m_buffer_model->buffer_from_row(0);
         replace_buffers_in_frames(original_buffer, replacement_buffer);
     });
 
     buffer_picker->open();
+}
+
+void Window::externally_modified_buffer(QString const& file_path)
+{
+    Buffer* buffer = nullptr;
+    for (int row = 0; row < m_buffer_model->rowCount(); ++row) {
+        if (m_buffer_model->index(row, 1).data() == file_path) {
+            buffer = m_buffer_model->buffer_from_row(row);
+            break;
+        }
+    }
+    if (buffer == nullptr) {
+        m_watcher->removePath(file_path);
+        return;
+    }
+
+    if (QFile::exists(file_path)) {
+        auto result = QMessageBox::question(this, "Warning", "This file was externally modified. Reload?\n" + file_path);
+        if (result == QMessageBox::Yes) {
+            auto read_error = buffer->read();
+            if (!read_error.isEmpty()) {
+                QMessageBox::warning(this, "Warning", "File could not be opened: " + read_error);
+                return;
+            }
+        }
+    }
 }
 
 void Window::closeEvent(QCloseEvent* event)
@@ -493,6 +509,9 @@ void Window::update_window_title()
 void Window::connect_buffer(Buffer* buffer)
 {
     m_buffer_model->add_buffer(buffer);
+
+    if (!buffer->file_path().isEmpty())
+        m_watcher->addPath(buffer->file_path());
 }
 
 Frame* Window::create_frame()
@@ -518,6 +537,17 @@ void Window::replace_buffers_in_frames(Buffer* original, Buffer* replacement)
     }
 
     set_active_frame(m_active_frame);
+}
+
+QString Window::unwatched_buffer_write(Buffer* buffer)
+{
+    auto remove_succeeded = m_watcher->removePath(buffer->file_path());
+    auto write_error = buffer->write();
+
+    if (remove_succeeded)
+        m_watcher->addPath(buffer->file_path());
+
+    return write_error;
 }
 
 void Window::set_active_frame(Frame* frame)

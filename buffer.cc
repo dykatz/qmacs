@@ -1,9 +1,50 @@
+#include <QFile>
+
 #include "buffer.hh"
 
 Buffer::Buffer(QString const& name, QWidget* parent)
     : QTextDocument(parent)
 {
     setObjectName(name);
+}
+
+QString Buffer::read()
+{
+    if (m_file_path.isEmpty())
+        return "Cannot load untracked file";
+
+    QFile file(m_file_path);
+
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+        return file.errorString();
+
+    QTextStream file_stream(&file);
+    auto file_contents = file_stream.readAll();
+    file.close();
+
+    setPlainText(file_contents);
+    setModified(false);
+    return "";
+}
+
+QString Buffer::write()
+{
+    if (!isModified())
+        return "";
+    if (m_file_path.isEmpty())
+        return "Cannot save untracked file";
+
+    QFile file(m_file_path);
+
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+        return file.errorString();
+
+    QTextStream file_stream(&file);
+    file_stream << toPlainText();
+    file.close();
+
+    setModified(false);
+    return "";
 }
 
 void Buffer::set_file_path(QString file_path)

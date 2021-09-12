@@ -26,8 +26,12 @@ private slots:
     void open_buffer();
     void save_buffer();
     void save_buffer_as();
+    void save_all_buffers();
     void switch_buffer();
     void close_buffer();
+
+protected:
+    virtual void closeEvent(QCloseEvent*) override;
 
 private:
     QString create_untitled_name() const;

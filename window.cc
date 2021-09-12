@@ -33,6 +33,11 @@ Window::Window()
     connect(save_buffer_as_action, &QAction::triggered, this, &Window::save_buffer_as);
     file_menu->addAction(save_buffer_as_action);
 
+    auto save_all_buffers_action = new QAction("Save All Files", this);
+    save_all_buffers_action->setShortcut(Qt::CTRL | Qt::ALT | Qt::Key_S);
+    connect(save_all_buffers_action, &QAction::triggered, this, &Window::save_all_buffers);
+    file_menu->addAction(save_all_buffers_action);
+
     auto switch_buffer_action = new QAction("Switch &Buffer", this);
     switch_buffer_action->setShortcut(Qt::CTRL | Qt::Key_B);
     connect(switch_buffer_action, &QAction::triggered, this, &Window::switch_buffer);
@@ -351,6 +356,50 @@ void Window::save_buffer_as()
     set_active_buffer(m_active_buffer);
 }
 
+void Window::save_all_buffers()
+{
+    QList<Buffer*> untracked_buffers;
+    for (int row = 0; row < m_buffer_model->rowCount(); ++row) {
+        auto buffer = m_buffer_model->buffer_from_row(row);
+        auto file_path = buffer->file_path();
+
+        if (!buffer->isModified())
+            continue;
+
+        if (file_path.isEmpty()) {
+            untracked_buffers.push_front(buffer);
+            continue;
+        }
+
+        QFile file(file_path);
+        if (!file.open(QFile::WriteOnly | QFile::Text)) {
+            QMessageBox::warning(this, "Warning", "Could not save file: " + file.errorString());
+            continue;
+        }
+
+        QTextStream file_stream(&file);
+        file_stream << buffer->toPlainText();
+        file.close();
+
+        buffer->setModified(false);
+    }
+
+    if (untracked_buffers.count() > 0) {
+        auto result = QMessageBox::question(this, "Warning", "You have untracked files. Save them?");
+        if (result == QMessageBox::No)
+            return;
+
+        auto original_buffer = m_active_buffer;
+
+        for (auto buffer : untracked_buffers) {
+            set_active_buffer(buffer);
+            save_buffer_as();
+        }
+
+        set_active_buffer(original_buffer);
+    }
+}
+
 void Window::switch_buffer()
 {
     auto buffer_picker = new Picker(m_buffer_model, 1, this);
@@ -371,12 +420,49 @@ void Window::close_buffer()
     connect(buffer_picker, &QDialog::accepted, this, [=] {
         auto buffer_row = buffer_picker->result_row();
         auto original_buffer = m_buffer_model->buffer_from_row(buffer_row);
+
+        if (original_buffer->isModified()) {
+            auto result = QMessageBox::question(this, "Warning", "This file is unsaved. Save it?");
+            if (result == QMessageBox::Yes) {
+                auto active_buffer = m_active_buffer;
+                set_active_buffer(original_buffer);
+                save_buffer();
+                set_active_buffer(active_buffer);
+            }
+        }
+
         m_buffer_model->remove_buffer(buffer_row);
         auto replacement_buffer = m_buffer_model->buffer_from_row(0);
         replace_buffers_in_frames(original_buffer, replacement_buffer);
     });
 
     buffer_picker->open();
+}
+
+void Window::closeEvent(QCloseEvent* event)
+{
+    bool has_unsaved_buffers = false;
+
+    for (int row = 0; row < m_buffer_model->rowCount(); ++row) {
+        if (m_buffer_model->index(row, 3).data() == true) {
+            has_unsaved_buffers = true;
+            break;
+        }
+    }
+
+    if (!has_unsaved_buffers) {
+        event->accept();
+        return;
+    }
+
+    auto result = QMessageBox::question(this, "Warning", "You have unsaved files. Save them?", QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes);
+    if (result == QMessageBox::Cancel) {
+        event->ignore();
+    } else {
+        if (result == QMessageBox::Yes)
+            save_all_buffers();
+        event->accept();
+    }
 }
 
 QString Window::create_untitled_name() const

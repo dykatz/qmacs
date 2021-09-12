@@ -6,6 +6,6 @@ Frame::Frame()
 
 void Frame::focusInEvent(QFocusEvent* event)
 {
-    QTextEdit::focusInEvent(event);
+    QPlainTextEdit::focusInEvent(event);
     emit gained_focus();
 }

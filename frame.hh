@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QTextEdit>
+#include <QPlainTextEdit>
 
-class Frame : public QTextEdit
+class Frame : public QPlainTextEdit
 {
     Q_OBJECT
 

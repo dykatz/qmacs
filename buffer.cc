@@ -1,4 +1,5 @@
 #include <QFile>
+#include <QPlainTextDocumentLayout>
 
 #include "buffer.hh"
 
@@ -6,6 +7,7 @@ Buffer::Buffer(QString const& name, QWidget* parent)
     : QTextDocument(parent)
 {
     setObjectName(name);
+    setDocumentLayout(new QPlainTextDocumentLayout(this));
 }
 
 QString Buffer::read()

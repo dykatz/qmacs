@@ -2,6 +2,7 @@
 #include <QPainter>
 #include <QTextBlock>
 
+#include "buffer.hh"
 #include "frame.hh"
 
 FrameLineNumberArea::FrameLineNumberArea(Frame* frame)
@@ -23,13 +24,18 @@ Frame::Frame()
 {
     m_line_number_area = new FrameLineNumberArea(this);
 
-    // TODO: trigger changing the line_number_area_width when the buffer is changed
     connect(this, &QPlainTextEdit::blockCountChanged, this, &Frame::update_line_number_area_width);
     connect(this, &QPlainTextEdit::updateRequest, this, &Frame::update_line_number_area);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, &Frame::highlight_current_line);
 
     update_line_number_area_width(0);
     highlight_current_line();
+}
+
+void Frame::set_buffer(Buffer* buffer)
+{
+    setDocument(buffer);
+    update_line_number_area_width(0);
 }
 
 int Frame::line_number_area_width() const

@@ -2,6 +2,7 @@
 
 #include <QPlainTextEdit>
 
+class Buffer;
 class Frame;
 
 class FrameLineNumberArea final : public QWidget
@@ -27,6 +28,8 @@ public:
     Frame();
     virtual ~Frame() = default;
 
+    Buffer* buffer() const { return qobject_cast<Buffer*>(document()); }
+    void set_buffer(Buffer* buffer);
     int line_number_area_width() const;
     void line_number_area_paint_event(QPaintEvent* event);
 

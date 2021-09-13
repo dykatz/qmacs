@@ -517,7 +517,7 @@ void Window::connect_buffer(Buffer* buffer)
 Frame* Window::create_frame()
 {
     auto new_frame = new Frame;
-    new_frame->setDocument(m_active_buffer);
+    new_frame->set_buffer(m_active_buffer);
     m_frames.push_back(new_frame);
     connect(new_frame, &Frame::gained_focus, this, [=]{ set_active_frame(new_frame); });
     return new_frame;
@@ -531,9 +531,9 @@ void Window::replace_buffers_in_frames(Buffer* original, Buffer* replacement)
     }
 
     for (auto frame : m_frames) {
-        auto frame_buffer = qobject_cast<Buffer*>(frame->document());
+        auto frame_buffer = frame->buffer();
         if (frame_buffer == original)
-            frame->setDocument(replacement);
+            frame->set_buffer(replacement);
     }
 
     set_active_frame(m_active_frame);
@@ -553,13 +553,13 @@ QString Window::unwatched_buffer_write(Buffer* buffer)
 void Window::set_active_frame(Frame* frame)
 {
     m_active_frame = frame;
-    m_active_buffer = qobject_cast<Buffer*>(frame->document());
+    m_active_buffer = frame->buffer();
     update_window_title();
 }
 
 void Window::set_active_buffer(Buffer* buffer)
 {
     m_active_buffer = buffer;
-    m_active_frame->setDocument(buffer);
+    m_active_frame->set_buffer(buffer);
     update_window_title();
 }

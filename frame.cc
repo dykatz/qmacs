@@ -54,7 +54,7 @@ int Frame::line_number_area_width() const
 void Frame::line_number_area_paint_event(QPaintEvent* event)
 {
     QPainter painter(m_line_number_area);
-    painter.fillRect(event->rect(), Qt::lightGray);
+    painter.fillRect(event->rect(), QPalette().color(QPalette::ToolTipBase));
 
     auto block = firstVisibleBlock();
     auto block_number = block.blockNumber();
@@ -64,7 +64,7 @@ void Frame::line_number_area_paint_event(QPaintEvent* event)
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             auto number = QString::number(block_number + 1);
-            painter.setPen(Qt::black);
+            painter.setPen(QPalette().color(QPalette::ToolTipText));
             painter.drawText(0, top, m_line_number_area->width() - 2, fontMetrics().height(),
                              Qt::AlignRight, number);
         }
@@ -111,12 +111,9 @@ void Frame::highlight_current_line()
     if (isReadOnly())
         return;
 
-    // TODO: detect dark mode
-    // auto line_color = QColor(Qt::yellow).lighter(160);
-    auto line_color = QColor(Qt::blue).darker(160);
-
     QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(line_color);
+    selection.format.setBackground(QPalette().color(QPalette::Highlight));
+    selection.format.setForeground(QPalette().color(QPalette::HighlightedText));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
     selection.cursor.clearSelection();

@@ -1,4 +1,3 @@
-#include <QAction>
 #include <QFileDialog>
 #include <QMenu>
 #include <QMenuBar>
@@ -60,25 +59,29 @@ Window::Window()
     connect(vertical_split_frame_action, &QAction::triggered, this, &Window::vertical_split_frame);
     frame_menu->addAction(vertical_split_frame_action);
 
-    auto remove_other_frames_action = new QAction("Remove &Other", this);
-    remove_other_frames_action->setShortcut(Qt::CTRL | Qt::Key_1);
-    connect(remove_other_frames_action, &QAction::triggered, this, &Window::remove_other_frames);
-    frame_menu->addAction(remove_other_frames_action);
+    m_remove_other_frames_action = new QAction("Remove &Other", this);
+    m_remove_other_frames_action->setShortcut(Qt::CTRL | Qt::Key_1);
+    m_remove_other_frames_action->setEnabled(false);
+    connect(m_remove_other_frames_action, &QAction::triggered, this, &Window::remove_other_frames);
+    frame_menu->addAction(m_remove_other_frames_action);
 
-    auto remove_this_frame_action = new QAction("Remove &Current", this);
-    remove_this_frame_action->setShortcut(Qt::CTRL | Qt::Key_0);
-    connect(remove_this_frame_action, &QAction::triggered, this, &Window::remove_this_frame);
-    frame_menu->addAction(remove_this_frame_action);
+    m_remove_this_frame_action = new QAction("Remove &Current", this);
+    m_remove_this_frame_action->setShortcut(Qt::CTRL | Qt::Key_0);
+    m_remove_this_frame_action->setEnabled(false);
+    connect(m_remove_this_frame_action, &QAction::triggered, this, &Window::remove_this_frame);
+    frame_menu->addAction(m_remove_this_frame_action);
 
-    auto move_to_next_frame_action = new QAction("Move to &Next Frame", this);
-    move_to_next_frame_action->setShortcut(Qt::CTRL | Qt::Key_Tab);
-    connect(move_to_next_frame_action, &QAction::triggered, this, &Window::move_to_next_frame);
-    frame_menu->addAction(move_to_next_frame_action);
+    m_move_to_next_frame_action = new QAction("Move to &Next Frame", this);
+    m_move_to_next_frame_action->setShortcut(Qt::CTRL | Qt::Key_Tab);
+    m_move_to_next_frame_action->setEnabled(false);
+    connect(m_move_to_next_frame_action, &QAction::triggered, this, &Window::move_to_next_frame);
+    frame_menu->addAction(m_move_to_next_frame_action);
 
-    auto move_to_previous_frame_action = new QAction("Move to &Previous Frame", this);
-    move_to_previous_frame_action->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab);
-    connect(move_to_previous_frame_action, &QAction::triggered, this, &Window::move_to_previous_frame);
-    frame_menu->addAction(move_to_previous_frame_action);
+    m_move_to_previous_frame_action = new QAction("Move to &Previous Frame", this);
+    m_move_to_previous_frame_action->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab);
+    m_move_to_previous_frame_action->setEnabled(false);
+    connect(m_move_to_previous_frame_action, &QAction::triggered, this, &Window::move_to_previous_frame);
+    frame_menu->addAction(m_move_to_previous_frame_action);
 
     m_watcher = new QFileSystemWatcher;
     connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &Window::externally_modified_buffer);
@@ -114,6 +117,7 @@ void Window::horizontal_split_frame()
 
     splitter->insertWidget(splitter->indexOf(m_active_frame) + 1, create_frame());
     m_active_frame->setFocus();
+    enable_frame_actions();
 }
 
 void Window::vertical_split_frame()
@@ -138,6 +142,7 @@ void Window::vertical_split_frame()
 
     splitter->insertWidget(splitter->indexOf(m_active_frame) + 1, create_frame());
     m_active_frame->setFocus();
+    enable_frame_actions();
 }
 
 void Window::remove_other_frames()
@@ -150,6 +155,7 @@ void Window::remove_other_frames()
     delete central_widget;
     m_active_frame->setFocus();
     m_frames.append(m_active_frame);
+    enable_frame_actions(false);
 }
 
 void Window::remove_this_frame()
@@ -198,6 +204,7 @@ void Window::remove_this_frame()
         }
     } else {
         m_active_frame = qobject_cast<Frame*>(centralWidget());
+        enable_frame_actions(false);
     }
 
     m_active_frame->setFocus();
@@ -499,6 +506,14 @@ QString Window::create_untitled_name() const
 
         ++untitled_number;
     }
+}
+
+void Window::enable_frame_actions(bool enabled)
+{
+    m_remove_other_frames_action->setEnabled(enabled);
+    m_remove_this_frame_action->setEnabled(enabled);
+    m_move_to_next_frame_action->setEnabled(enabled);
+    m_move_to_previous_frame_action->setEnabled(enabled);
 }
 
 void Window::update_window_title()

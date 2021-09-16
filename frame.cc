@@ -117,8 +117,7 @@ void Frame::highlight_current_line()
         return;
 
     QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(QPalette().color(QPalette::Highlight));
-    selection.format.setForeground(QPalette().color(QPalette::HighlightedText));
+    selection.format.setBackground(QPalette().color(QPalette::Button));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
     selection.cursor.clearSelection();

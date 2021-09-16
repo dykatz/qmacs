@@ -8,6 +8,11 @@ Buffer::Buffer(QString const& name, QWidget* parent)
 {
     setObjectName(name);
     setDocumentLayout(new QPlainTextDocumentLayout(this));
+
+    QFont font("");
+    font.setStyleHint(QFont::Monospace);
+    font.setFixedPitch(true);
+    setDefaultFont(font);
 }
 
 QString Buffer::read()

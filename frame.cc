@@ -8,7 +8,12 @@
 FrameLineNumberArea::FrameLineNumberArea(Frame* frame)
     : QWidget(frame)
     , m_frame(frame)
-{}
+{
+    QFont font("");
+    font.setStyleHint(QFont::Monospace);
+    font.setFixedPitch(true);
+    setFont(font);
+}
 
 QSize FrameLineNumberArea::sizeHint() const
 {

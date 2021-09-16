@@ -428,7 +428,8 @@ void Window::close_buffer()
         }
 
         m_buffer_model->remove_buffer(buffer_row);
-        m_watcher->removePath(original_buffer->file_path());
+        if (!original_buffer->file_path().isEmpty())
+            m_watcher->removePath(original_buffer->file_path());
         auto replacement_buffer = m_buffer_model->buffer_from_row(0);
         replace_buffers_in_frames(original_buffer, replacement_buffer);
     });

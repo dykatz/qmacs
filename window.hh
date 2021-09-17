@@ -32,6 +32,11 @@ private slots:
     void switch_buffer();
     void close_buffer();
     void externally_modified_buffer(QString const&);
+    void undo();
+    void redo();
+    void copy();
+    void cut();
+    void paste();
 
 protected:
     virtual void closeEvent(QCloseEvent*) override;

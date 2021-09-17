@@ -47,6 +47,35 @@ Window::Window()
     connect(close_buffer_action, &QAction::triggered, this, &Window::close_buffer);
     file_menu->addAction(close_buffer_action);
 
+    auto edit_menu = menuBar()->addMenu("&Edit");
+
+    auto undo_action = new QAction("&Undo", this);
+    undo_action->setShortcut(QKeySequence::Undo);
+    connect(undo_action, &QAction::triggered, this, &Window::undo);
+    edit_menu->addAction(undo_action);
+
+    auto redo_action = new QAction("&Redo", this);
+    redo_action->setShortcut(QKeySequence::Redo);
+    connect(redo_action, &QAction::triggered, this, &Window::redo);
+    edit_menu->addAction(redo_action);
+
+    edit_menu->addSeparator();
+
+    auto copy_action = new QAction("&Copy", this);
+    copy_action->setShortcut(QKeySequence::Copy);
+    connect(copy_action, &QAction::triggered, this, &Window::copy);
+    edit_menu->addAction(copy_action);
+
+    auto cut_action = new QAction("Cu&t", this);
+    cut_action->setShortcut(QKeySequence::Cut);
+    connect(cut_action, &QAction::triggered, this, &Window::cut);
+    edit_menu->addAction(cut_action);
+
+    auto paste_action = new QAction("&Paste", this);
+    paste_action->setShortcut(QKeySequence::Paste);
+    connect(paste_action, &QAction::triggered, this, &Window::paste);
+    edit_menu->addAction(paste_action);
+
     auto frame_menu = menuBar()->addMenu("F&rame");
 
     auto horizontal_split_frame_action = new QAction("Split &Horizontally", this);
@@ -461,6 +490,31 @@ void Window::externally_modified_buffer(QString const& file_path)
             }
         }
     }
+}
+
+void Window::undo()
+{
+    m_active_frame->undo();
+}
+
+void Window::redo()
+{
+    m_active_frame->redo();
+}
+
+void Window::copy()
+{
+    m_active_frame->copy();
+}
+
+void Window::cut()
+{
+    m_active_frame->cut();
+}
+
+void Window::paste()
+{
+    m_active_frame->paste();
 }
 
 void Window::closeEvent(QCloseEvent* event)

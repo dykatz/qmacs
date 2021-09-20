@@ -27,15 +27,17 @@ Window::Window()
     connect(save_buffer_action, &QAction::triggered, this, &Window::save_buffer);
     file_menu->addAction(save_buffer_action);
 
-    auto save_buffer_as_action = new QAction("S&ave File As", this);
+    auto save_buffer_as_action = new QAction("Save &File As", this);
     save_buffer_as_action->setShortcut(QKeySequence::SaveAs);
     connect(save_buffer_as_action, &QAction::triggered, this, &Window::save_buffer_as);
     file_menu->addAction(save_buffer_as_action);
 
-    auto save_all_buffers_action = new QAction("Save All Files", this);
+    auto save_all_buffers_action = new QAction("Save &All Files", this);
     save_all_buffers_action->setShortcut(Qt::CTRL | Qt::ALT | Qt::Key_S);
     connect(save_all_buffers_action, &QAction::triggered, this, &Window::save_all_buffers);
     file_menu->addAction(save_all_buffers_action);
+
+    file_menu->addSeparator();
 
     auto switch_buffer_action = new QAction("Switch &Buffer", this);
     switch_buffer_action->setShortcut(Qt::CTRL | Qt::Key_B);
@@ -76,41 +78,41 @@ Window::Window()
     connect(paste_action, &QAction::triggered, this, &Window::paste);
     edit_menu->addAction(paste_action);
 
-    auto frame_menu = menuBar()->addMenu("F&rame");
+    auto view_menu = menuBar()->addMenu("&View");
 
-    auto horizontal_split_frame_action = new QAction("Split &Horizontally", this);
+    auto horizontal_split_frame_action = new QAction("Split Frame &Horizontally", this);
     horizontal_split_frame_action->setShortcut(Qt::CTRL | Qt::Key_3);
     connect(horizontal_split_frame_action, &QAction::triggered, this, &Window::horizontal_split_frame);
-    frame_menu->addAction(horizontal_split_frame_action);
+    view_menu->addAction(horizontal_split_frame_action);
 
-    auto vertical_split_frame_action = new QAction("Split &Vertically", this);
+    auto vertical_split_frame_action = new QAction("Split Frame &Vertically", this);
     vertical_split_frame_action->setShortcut(Qt::CTRL | Qt::Key_2);
     connect(vertical_split_frame_action, &QAction::triggered, this, &Window::vertical_split_frame);
-    frame_menu->addAction(vertical_split_frame_action);
+    view_menu->addAction(vertical_split_frame_action);
 
-    m_remove_other_frames_action = new QAction("Remove &Other", this);
+    m_remove_other_frames_action = new QAction("Remove &Other Frames", this);
     m_remove_other_frames_action->setShortcut(Qt::CTRL | Qt::Key_1);
     m_remove_other_frames_action->setEnabled(false);
     connect(m_remove_other_frames_action, &QAction::triggered, this, &Window::remove_other_frames);
-    frame_menu->addAction(m_remove_other_frames_action);
+    view_menu->addAction(m_remove_other_frames_action);
 
-    m_remove_this_frame_action = new QAction("Remove &Current", this);
+    m_remove_this_frame_action = new QAction("Remove &Current Frame", this);
     m_remove_this_frame_action->setShortcut(Qt::CTRL | Qt::Key_0);
     m_remove_this_frame_action->setEnabled(false);
     connect(m_remove_this_frame_action, &QAction::triggered, this, &Window::remove_this_frame);
-    frame_menu->addAction(m_remove_this_frame_action);
+    view_menu->addAction(m_remove_this_frame_action);
 
     m_move_to_next_frame_action = new QAction("Move to &Next Frame", this);
     m_move_to_next_frame_action->setShortcut(Qt::CTRL | Qt::Key_Tab);
     m_move_to_next_frame_action->setEnabled(false);
     connect(m_move_to_next_frame_action, &QAction::triggered, this, &Window::move_to_next_frame);
-    frame_menu->addAction(m_move_to_next_frame_action);
+    view_menu->addAction(m_move_to_next_frame_action);
 
     m_move_to_previous_frame_action = new QAction("Move to &Previous Frame", this);
     m_move_to_previous_frame_action->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab);
     m_move_to_previous_frame_action->setEnabled(false);
     connect(m_move_to_previous_frame_action, &QAction::triggered, this, &Window::move_to_previous_frame);
-    frame_menu->addAction(m_move_to_previous_frame_action);
+    view_menu->addAction(m_move_to_previous_frame_action);
 
     m_watcher = new QFileSystemWatcher;
     connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &Window::externally_modified_buffer);

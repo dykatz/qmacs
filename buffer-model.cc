@@ -83,6 +83,8 @@ void BufferModel::remove_buffer(int buffer_index)
 
 void BufferModel::move_buffer_to_top(int buffer_index)
 {
+    if (buffer_index == 0)
+        return;
     beginMoveRows(QModelIndex(), buffer_index, buffer_index, QModelIndex(), 0);
     m_buffers.move(buffer_index, 0);
     endMoveRows();

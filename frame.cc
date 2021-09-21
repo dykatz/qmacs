@@ -53,7 +53,7 @@ int Frame::line_number_area_width() const
         ++digits;
     }
 
-    return 5 + digits * fontMetrics().horizontalAdvance(QLatin1Char('9'));
+    return 5 + (digits + 3) * fontMetrics().horizontalAdvance(QLatin1Char('9'));
 }
 
 void Frame::line_number_area_paint_event(QPaintEvent* event)
@@ -65,13 +65,14 @@ void Frame::line_number_area_paint_event(QPaintEvent* event)
     auto block_number = block.blockNumber();
     auto top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
     auto bottom = top + qRound(blockBoundingRect(block).height());
+    auto width = m_line_number_area->width() - 2 - fontMetrics().horizontalAdvance(QLatin1Char('9'));
+    auto height = fontMetrics().height();
 
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             auto number = QString::number(block_number + 1);
             painter.setPen(QPalette().color(QPalette::ToolTipText));
-            painter.drawText(0, top, m_line_number_area->width() - 2, fontMetrics().height(),
-                             Qt::AlignRight, number);
+            painter.drawText(0, top, width, height, Qt::AlignRight, number);
         }
 
         block = block.next();

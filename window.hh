@@ -26,8 +26,8 @@ private slots:
     void move_to_previous_frame();
     void new_buffer();
     void open_buffer();
-    void save_buffer();
-    void save_buffer_as();
+    bool save_buffer();
+    bool save_buffer_as();
     void save_all_buffers();
     void switch_buffer();
     void close_buffer();

@@ -351,26 +351,26 @@ void Window::open_buffer()
         QMessageBox::warning(this, "Warning", "Could not open files:\n" + error_messages.join("\n"));
 }
 
-void Window::save_buffer()
+bool Window::save_buffer()
 {
     auto file_path = m_active_buffer->file_path();
-    if (file_path.isEmpty()) {
-        save_buffer_as();
-        return;
-    }
+    if (file_path.isEmpty())
+        return save_buffer_as();
 
     auto write_error = unwatched_buffer_write(m_active_buffer);
     if (!write_error.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Could not save file: " + write_error);
-        return;
+        return false;
     }
+
+    return true;
 }
 
-void Window::save_buffer_as()
+bool Window::save_buffer_as()
 {
     auto new_file_path = QFileDialog::getSaveFileName(this, "Save file as...");
     if (new_file_path.isEmpty())
-        return;
+        return false;
 
     auto old_file_name = m_active_buffer->objectName();
     auto old_file_path = m_active_buffer->file_path();
@@ -381,12 +381,13 @@ void Window::save_buffer_as()
         QMessageBox::warning(this, "Warning", "Could not save file: " + write_error);
         m_active_buffer->set_file_path(old_file_path);
         m_active_buffer->setObjectName(old_file_name);
-        return;
+        return false;
     }
 
     m_watcher->removePath(old_file_path);
     m_watcher->addPath(new_file_path);
     set_active_buffer(m_active_buffer);
+    return true;
 }
 
 void Window::save_all_buffers()
@@ -449,13 +450,18 @@ void Window::close_buffer()
         auto original_buffer = m_buffer_model->buffer_from_row(buffer_row);
 
         if (original_buffer->isModified()) {
-            auto result = QMessageBox::question(this, "Warning", "This file is unsaved. Save it?");
-            if (result == QMessageBox::Yes) {
-                auto active_buffer = m_active_buffer;
-                set_active_buffer(original_buffer);
-                save_buffer();
-                set_active_buffer(active_buffer);
+            auto active_buffer = m_active_buffer;
+            set_active_buffer(original_buffer);
+            while (true) {
+                auto result = QMessageBox::question(this, "Warning", "This file is unsaved. Save it?");
+                if (result == QMessageBox::Yes) {
+                    if (save_buffer())
+                        break;
+                } else {
+                    break;
+                }
             }
+            set_active_buffer(active_buffer);
         }
 
         m_buffer_model->remove_buffer(buffer_row);

@@ -348,7 +348,7 @@ void Window::open_buffer()
     if (new_active_buffer != nullptr)
         set_active_buffer(new_active_buffer);
     if (error_messages.count() > 0)
-        QMessageBox::warning(this, "Warning", "Could not open files:\n" + error_messages.join("\n"));
+        QMessageBox::warning(this, "Warning", "Could not open file(s):\n" + error_messages.join("\n"));
 }
 
 bool Window::save_buffer()
@@ -390,42 +390,49 @@ bool Window::save_buffer_as()
     return true;
 }
 
-void Window::save_all_buffers()
+bool Window::save_all_buffers()
 {
+    QList<QString> unsaved_buffer_warnings;
     QList<Buffer*> untracked_buffers;
+
     for (int row = 0; row < m_buffer_model->rowCount(); ++row) {
         auto buffer = m_buffer_model->buffer_from_row(row);
-        auto file_path = buffer->file_path();
-
         if (!buffer->isModified())
             continue;
 
+        auto file_path = buffer->file_path();
         if (file_path.isEmpty()) {
             untracked_buffers.push_front(buffer);
             continue;
         }
 
         auto write_error = unwatched_buffer_write(buffer);
-        if (!write_error.isEmpty()) {
-            QMessageBox::warning(this, "Warning", "Could not save file: " + write_error);
-            continue;
-        }
+        if (!write_error.isEmpty())
+            unsaved_buffer_warnings.push_back(write_error);
+    }
+
+    if (unsaved_buffer_warnings.count() > 0) {
+        QMessageBox::warning(this, "Warning", "Could not save file(s):\n" + unsaved_buffer_warnings.join('\n'));
+        return false;
     }
 
     if (untracked_buffers.count() > 0) {
         auto result = QMessageBox::question(this, "Warning", "You have untracked files. Save them?");
         if (result == QMessageBox::No)
-            return;
+            return true;
 
         auto original_buffer = m_active_buffer;
 
         for (auto buffer : untracked_buffers) {
             set_active_buffer(buffer);
-            save_buffer_as();
+            if (!save_buffer_as())
+                return false;
         }
 
         set_active_buffer(original_buffer);
     }
+
+    return true;
 }
 
 void Window::switch_buffer()
@@ -545,8 +552,12 @@ void Window::closeEvent(QCloseEvent* event)
     if (result == QMessageBox::Cancel) {
         event->ignore();
     } else {
-        if (result == QMessageBox::Yes)
-            save_all_buffers();
+        if (result == QMessageBox::Yes) {
+            if (!save_all_buffers()) {
+                event->ignore();
+                return;
+            }
+        }
         event->accept();
     }
 }

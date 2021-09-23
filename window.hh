@@ -28,7 +28,7 @@ private slots:
     void open_buffer();
     bool save_buffer();
     bool save_buffer_as();
-    void save_all_buffers();
+    bool save_all_buffers();
     void switch_buffer();
     void close_buffer();
     void externally_modified_buffer(QString const&);

@@ -12,6 +12,7 @@ Buffer::Buffer(QString const& name, QWidget* parent)
     QFont font("");
     font.setStyleHint(QFont::Monospace);
     font.setFixedPitch(true);
+    font.setPointSize(12);
     setDefaultFont(font);
 }
 
@@ -72,4 +73,19 @@ void Buffer::set_edit_mode(QString edit_mode)
         m_edit_mode = edit_mode;
         emit edit_mode_changed(edit_mode);
     }
+}
+
+void Buffer::on_zoom(int delta)
+{
+    auto font = defaultFont();
+    auto font_size = font.pointSize() + delta;
+    if (font_size < 8)
+        font_size = 8;
+    if (font_size > 60)
+        font_size = 60;
+    font.setFamily("");
+    font.setStyleHint(QFont::Monospace);
+    font.setFixedPitch(true);
+    font.setPointSize(font_size);
+    setDefaultFont(font);
 }

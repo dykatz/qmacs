@@ -12,6 +12,7 @@ FrameLineNumberArea::FrameLineNumberArea(Frame* frame)
     QFont font("");
     font.setStyleHint(QFont::Monospace);
     font.setFixedPitch(true);
+    font.setPointSize(12);
     setFont(font);
 }
 
@@ -82,6 +83,22 @@ void Frame::line_number_area_paint_event(QPaintEvent* event)
     }
 }
 
+void Frame::on_zoom(int delta)
+{
+    auto frame_font = font();
+    auto font_size = frame_font.pointSize() + delta;
+    if (font_size < 8)
+        font_size = 8;
+    if (font_size > 60)
+        font_size = 60;
+    frame_font.setFamily("");
+    frame_font.setStyleHint(QFont::Monospace);
+    frame_font.setFixedPitch(true);
+    frame_font.setPointSize(font_size);
+    setFont(frame_font);
+    m_line_number_area->setFont(frame_font);
+}
+
 void Frame::focusInEvent(QFocusEvent* event)
 {
     QPlainTextEdit::focusInEvent(event);
@@ -94,6 +111,16 @@ void Frame::resizeEvent(QResizeEvent* event)
 
     auto cr = contentsRect();
     m_line_number_area->setGeometry(cr.left(), cr.top(), line_number_area_width(), cr.height());
+}
+
+void Frame::wheelEvent(QWheelEvent* event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        event->ignore();
+        return;
+    }
+
+    QPlainTextEdit::wheelEvent(event);
 }
 
 void Frame::update_line_number_area_width(int)

@@ -19,6 +19,7 @@ public:
 public slots:
     void set_file_path(QString file_path);
     void set_edit_mode(QString edit_mode);
+    void on_zoom(int);
 
 signals:
     void file_path_changed(QString file_path);

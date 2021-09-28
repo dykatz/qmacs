@@ -80,6 +80,18 @@ Window::Window()
 
     auto view_menu = menuBar()->addMenu("&View");
 
+    auto zoom_in_action = new QAction("Zoom &In", this);
+    zoom_in_action->setShortcut(QKeySequence::ZoomIn);
+    connect(zoom_in_action, &QAction::triggered, this, &Window::zoom_in);
+    view_menu->addAction(zoom_in_action);
+
+    auto zoom_out_action = new QAction("Zoom &Out", this);
+    zoom_out_action->setShortcut(QKeySequence::ZoomOut);
+    connect(zoom_out_action, &QAction::triggered, this, &Window::zoom_out);
+    view_menu->addAction(zoom_out_action);
+
+    view_menu->addSeparator();
+
     auto horizontal_split_frame_action = new QAction("Split Frame &Horizontally", this);
     horizontal_split_frame_action->setShortcut(Qt::CTRL | Qt::Key_3);
     connect(horizontal_split_frame_action, &QAction::triggered, this, &Window::horizontal_split_frame);
@@ -532,6 +544,16 @@ void Window::paste()
     m_active_frame->paste();
 }
 
+void Window::zoom_in()
+{
+    emit on_zoom(-1);
+}
+
+void Window::zoom_out()
+{
+    emit on_zoom(1);
+}
+
 void Window::closeEvent(QCloseEvent* event)
 {
     bool has_unsaved_buffers = false;
@@ -560,6 +582,21 @@ void Window::closeEvent(QCloseEvent* event)
         }
         event->accept();
     }
+}
+
+void Window::wheelEvent(QWheelEvent* event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        auto number_of_pixels = event->hasPixelDelta() ? event->pixelDelta() : event->angleDelta() / 120;
+        auto y = number_of_pixels.y();
+
+        emit on_zoom(y);
+
+        event->accept();
+        return;
+    }
+
+    event->ignore();
 }
 
 QString Window::create_untitled_name() const
@@ -601,6 +638,8 @@ void Window::connect_buffer(Buffer* buffer)
 
     if (!buffer->file_path().isEmpty())
         m_watcher->addPath(buffer->file_path());
+
+    connect(this, &Window::on_zoom, buffer, &Buffer::on_zoom);
 }
 
 Frame* Window::create_frame()
@@ -609,6 +648,7 @@ Frame* Window::create_frame()
     new_frame->set_buffer(m_active_buffer);
     m_frames.push_back(new_frame);
     connect(new_frame, &Frame::gained_focus, this, [=]{ set_active_frame(new_frame); });
+    connect(this, &Window::on_zoom, new_frame, &Frame::on_zoom);
     return new_frame;
 }
 

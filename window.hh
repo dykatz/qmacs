@@ -37,9 +37,15 @@ private slots:
     void copy();
     void cut();
     void paste();
+    void zoom_in();
+    void zoom_out();
+
+signals:
+    void on_zoom(int);
 
 protected:
     virtual void closeEvent(QCloseEvent*) override;
+    virtual void wheelEvent(QWheelEvent*) override;
 
 private:
     QString create_untitled_name() const;

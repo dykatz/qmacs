@@ -14,7 +14,7 @@ public:
     QSize sizeHint() const override;
 
 protected:
-    void paintEvent(QPaintEvent* event) override;
+    virtual void paintEvent(QPaintEvent* event) override;
 
 private:
     Frame* m_frame;
@@ -33,12 +33,16 @@ public:
     int line_number_area_width() const;
     void line_number_area_paint_event(QPaintEvent* event);
 
+public slots:
+    void on_zoom(int);
+
 signals:
     void gained_focus();
 
 protected:
-    void focusInEvent(QFocusEvent*) override;
-    void resizeEvent(QResizeEvent* event) override;
+    virtual void focusInEvent(QFocusEvent*) override;
+    virtual void resizeEvent(QResizeEvent*) override;
+    virtual void wheelEvent(QWheelEvent*) override;
 
 private slots:
     void update_line_number_area_width(int);

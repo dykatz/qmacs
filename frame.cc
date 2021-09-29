@@ -25,6 +25,8 @@ Frame::Frame()
 {
     m_line_number_area = new FrameLineNumberArea(this);
 
+    setLineWrapMode(QPlainTextEdit::NoWrap);
+
     connect(this, &QPlainTextEdit::blockCountChanged, this, &Frame::update_line_number_area_width);
     connect(this, &QPlainTextEdit::updateRequest, this, &Frame::update_line_number_area);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, &Frame::highlight_current_line);

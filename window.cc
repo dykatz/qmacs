@@ -140,6 +140,19 @@ Window::Window()
     update_window_title();
 }
 
+void Window::set_font_point_size(int font_point_size)
+{
+    if (font_point_size < 8)
+        font_point_size = 8;
+    if (font_point_size > 60)
+        font_point_size = 60;
+
+    if (font_point_size != m_font_point_size) {
+        m_font_point_size = font_point_size;
+        emit font_point_size_changed(font_point_size);
+    }
+}
+
 void Window::horizontal_split_frame()
 {
     auto parent = m_active_frame->parent();
@@ -546,12 +559,12 @@ void Window::paste()
 
 void Window::zoom_in()
 {
-    emit on_zoom(-1);
+    set_font_point_size(m_font_point_size + 5);
 }
 
 void Window::zoom_out()
 {
-    emit on_zoom(1);
+    set_font_point_size(m_font_point_size - 5);
 }
 
 void Window::closeEvent(QCloseEvent* event)
@@ -588,9 +601,9 @@ void Window::wheelEvent(QWheelEvent* event)
 {
     if (event->modifiers() & Qt::ControlModifier) {
         auto number_of_pixels = event->hasPixelDelta() ? event->pixelDelta() : event->angleDelta() / 120;
-        auto y = number_of_pixels.y();
+        auto new_font_point_size = m_font_point_size + number_of_pixels.y();
 
-        emit on_zoom(y);
+        set_font_point_size(new_font_point_size);
 
         event->accept();
         return;
@@ -634,21 +647,23 @@ void Window::update_window_title()
 
 void Window::connect_buffer(Buffer* buffer)
 {
+    buffer->set_font_point_size(m_font_point_size);
     m_buffer_model->add_buffer(buffer);
 
     if (!buffer->file_path().isEmpty())
         m_watcher->addPath(buffer->file_path());
 
-    connect(this, &Window::on_zoom, buffer, &Buffer::on_zoom);
+    connect(this, &Window::font_point_size_changed, buffer, &Buffer::set_font_point_size);
 }
 
 Frame* Window::create_frame()
 {
     auto new_frame = new Frame;
     new_frame->set_buffer(m_active_buffer);
+    new_frame->set_font_point_size(m_font_point_size);
     m_frames.push_back(new_frame);
     connect(new_frame, &Frame::gained_focus, this, [=]{ set_active_frame(new_frame); });
-    connect(this, &Window::on_zoom, new_frame, &Frame::on_zoom);
+    connect(this, &Window::font_point_size_changed, new_frame, &Frame::set_font_point_size);
     return new_frame;
 }
 

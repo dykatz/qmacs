@@ -17,6 +17,9 @@ public:
     Window();
     virtual ~Window() = default;
 
+public slots:
+    void set_font_point_size(int);
+
 private slots:
     void horizontal_split_frame();
     void vertical_split_frame();
@@ -41,7 +44,7 @@ private slots:
     void zoom_out();
 
 signals:
-    void on_zoom(int);
+    void font_point_size_changed(int);
 
 protected:
     virtual void closeEvent(QCloseEvent*) override;
@@ -63,6 +66,7 @@ private:
     BufferModel* m_buffer_model;
     QList<Frame*> m_frames;
     QFileSystemWatcher* m_watcher;
+    int m_font_point_size { 12 };
 
     QAction* m_remove_other_frames_action;
     QAction* m_remove_this_frame_action;

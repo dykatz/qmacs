@@ -34,7 +34,7 @@ public:
     void line_number_area_paint_event(QPaintEvent* event);
 
 public slots:
-    void on_zoom(int);
+    void set_font_point_size(int);
 
 signals:
     void gained_focus();

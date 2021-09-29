@@ -9,11 +9,6 @@ FrameLineNumberArea::FrameLineNumberArea(Frame* frame)
     : QWidget(frame)
     , m_frame(frame)
 {
-    QFont font("");
-    font.setStyleHint(QFont::Monospace);
-    font.setFixedPitch(true);
-    font.setPointSize(12);
-    setFont(font);
 }
 
 QSize FrameLineNumberArea::sizeHint() const
@@ -33,9 +28,6 @@ Frame::Frame()
     connect(this, &QPlainTextEdit::blockCountChanged, this, &Frame::update_line_number_area_width);
     connect(this, &QPlainTextEdit::updateRequest, this, &Frame::update_line_number_area);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, &Frame::highlight_current_line);
-
-    update_line_number_area_width(0);
-    highlight_current_line();
 }
 
 void Frame::set_buffer(Buffer* buffer)
@@ -83,20 +75,18 @@ void Frame::line_number_area_paint_event(QPaintEvent* event)
     }
 }
 
-void Frame::on_zoom(int delta)
+void Frame::set_font_point_size(int font_point_size)
 {
-    auto frame_font = font();
-    auto font_size = frame_font.pointSize() + delta;
-    if (font_size < 8)
-        font_size = 8;
-    if (font_size > 60)
-        font_size = 60;
-    frame_font.setFamily("");
+    QFont frame_font("");
     frame_font.setStyleHint(QFont::Monospace);
     frame_font.setFixedPitch(true);
-    frame_font.setPointSize(font_size);
+    frame_font.setPointSize(font_point_size);
+
     setFont(frame_font);
     m_line_number_area->setFont(frame_font);
+
+    update_line_number_area_width(0);
+    highlight_current_line();
 }
 
 void Frame::focusInEvent(QFocusEvent* event)

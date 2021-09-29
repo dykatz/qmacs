@@ -90,6 +90,11 @@ Window::Window()
     connect(zoom_out_action, &QAction::triggered, this, &Window::zoom_out);
     view_menu->addAction(zoom_out_action);
 
+    auto reset_zoom_action = new QAction("&Reset Zoom", this);
+    reset_zoom_action->setShortcut(Qt::CTRL | Qt::Key_Equal);
+    connect(reset_zoom_action, &QAction::triggered, this, &Window::reset_zoom);
+    view_menu->addAction(reset_zoom_action);
+
     view_menu->addSeparator();
 
     auto horizontal_split_frame_action = new QAction("Split Frame &Horizontally", this);
@@ -565,6 +570,11 @@ void Window::zoom_in()
 void Window::zoom_out()
 {
     set_font_point_size(m_font_point_size - 5);
+}
+
+void Window::reset_zoom()
+{
+    set_font_point_size(12);
 }
 
 void Window::closeEvent(QCloseEvent* event)

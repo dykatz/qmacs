@@ -42,6 +42,7 @@ private slots:
     void paste();
     void zoom_in();
     void zoom_out();
+    void reset_zoom();
 
 signals:
     void font_point_size_changed(int);
